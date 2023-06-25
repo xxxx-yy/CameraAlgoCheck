@@ -53,6 +53,7 @@ getConfig() {
 	filter_brand=$(sed -n "${startLine}, ${endLine} {/FILTER_ALGO=.*/p}" $configPath | awk -F '=' '{print $2}')
 	photo_wm_brand=$(sed -n "${startLine}, ${endLine} {/PHOTO_WM_ALGO=.*/p}" $configPath | awk -F '=' '{print $2}')
 	video_wm_brand=$(sed -n "${startLine}, ${endLine} {/VIDEO_WM_ALGO=.*/p}" $configPath | awk -F '=' '{print $2}')
+	continuous_cap=$(sed -n "${startLine}, ${endLine} {/CONTINUOUS_CAP=.*/p}" $configPath | awk -F '=' '{print $2}')
 }
 
 chooseProduct() {
@@ -80,7 +81,7 @@ sprdAISceneCheck() {
 	kill $pid
 	local version=$(sed -n "/CAM_ALGO_CV_SD_LIBVER/p" logcat_ai_asd.txt | awk -F '[' '{print $3}' | awk -F ']' '{print $1}')
 	echo -e "   [ASD版本为：$version]\n"
-	rm -rf logcat_ai_asd.txt
+	rm logcat_ai_asd.txt
 	sleep 1
 	
 	echo "   请确保开启快速功能栏中的AI"
@@ -99,7 +100,7 @@ sprdAISceneCheck() {
 		kill $pid
 		local type=$(sed -n "/sprd_ai_scene_type_current/p" logcat_ai_asd.txt | awk -F ':' '{print $4}')
 		echo -e "   [ASD识别到的场景为：$type]\n"
-		rm -rf logcat_ai_asd.txt
+		rm logcat_ai_asd.txt
 		while true
 		do
 			echo -n "   是否继续识别？（Y,y/N,n）"
@@ -133,7 +134,7 @@ tranAsdCheck() {
 	kill $pid
 	local version=$(sed -n "2 {/Version/p}" logcat_ai_asd.txt | awk -F ':' '{print $3}')
 	echo -e "   [ASD版本为：$version]\n"
-	rm -rf logcat_ai_asd.txt
+	rm logcat_ai_asd.txt
 	sleep 1
 	#TODO
 }
@@ -212,9 +213,9 @@ sprdHdrCheck() {
 		return
 	fi
 	echo ""
-	rm -rf logcat_ai_hdr_version.txt
-	rm -rf logcat_ai_hdr_begin_time.txt
-	rm -rf logcat_ai_hdr_end_time.txt
+	rm logcat_ai_hdr_version.txt
+	rm logcat_ai_hdr_begin_time.txt
+	rm logcat_ai_hdr_end_time.txt
 	sleep 1
 }
 
@@ -248,7 +249,7 @@ mfnrCheck() {
 	kill $pid
 	local version=$(sed -n "/CAM_ALGO_CV_MFNR_LIBVER/p" logcat_ai_mfnr.txt | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
 	echo -e "   [MFNR版本为：$version]\n"
-	rm -rf logcat_ai_mfnr.txt
+	rm logcat_ai_mfnr.txt
 	sleep 1
 }
 
@@ -291,7 +292,7 @@ getFbTime() {
 		echo -n "   "
 		tail -n 1 logcat_fb_prev_time.txt
 	fi
-	rm -rf logcat_fb_prev_time.txt
+	rm logcat_fb_prev_time.txt
 	echo ""
 	adb logcat -c
 	adb logcat -v time -b main $TAG:D *:S --regex "\[processRaw\]E" > logcat_fb_cap_begin_time.txt &
@@ -314,8 +315,8 @@ getFbTime() {
 	sed -n "2p" logcat_fb_cap_begin_time.txt
 	echo -n "   "
 	sed -n "2p" logcat_fb_cap_end_time.txt
-	rm -rf logcat_fb_cap_begin_time.txt
-	rm -rf logcat_fb_cap_end_time.txt
+	rm logcat_fb_cap_begin_time.txt
+	rm logcat_fb_cap_end_time.txt
 	echo ""
 	sleep 1
 }
@@ -338,7 +339,7 @@ tranFbCheck() {
 	kill $pid1
 	local version=$(sed -n "/tran FB version/p" logcat_fb_version.txt | awk -F ':' '{print $3}')
 	echo "   [FB版本为：$version]"
-	rm -rf logcat_fb_version.txt
+	rm logcat_fb_version.txt
 	while ! [ -s logcat_fb_level_list.txt ]
 	do
 		continue
@@ -347,7 +348,7 @@ tranFbCheck() {
 	local levelList=$(sed -n "/supportList/p" logcat_fb_level_list.txt | awk -F ':' '{print $3}')
 	echo -e "   [配置文件中配置的该项目FB支持的最高等级为：$fb_level]"
 	echo -e "   [FB实际支持的等级有：$levelList]"
-	rm -rf logcat_fb_level_list.txt
+	rm logcat_fb_level_list.txt
 	while ! [ -s logcat_fb_current_level.txt ]
 	do
 		continue
@@ -355,7 +356,11 @@ tranFbCheck() {
 	kill $pid3
 	local currLev=$(sed -n "/mCurrentEntryValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
 	echo -e "   [FB当前的等级为:$currLev]\n"
-	rm -rf logcat_fb_current_level.txt
+	rm logcat_fb_current_level.txt
+	if [ $currLev == 0 ]
+	then
+		read -p "   当前美颜为关闭状态，请开启美颜后按下回车"
+	fi
 	getFbTime
 	while true
 	do
@@ -378,7 +383,11 @@ tranFbCheck() {
 				currLev=$(sed -n "/mCurrentEntryValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}')
 			fi
 			echo -e "   [FB当前的等级为:$currLev]\n"
-			rm -rf logcat_fb_current_level.txt
+			rm logcat_fb_current_level.txt
+			if [ $currLev == 0 ]
+			then
+				read -p "   当前美颜为关闭状态，请开启美颜后按下回车"
+			fi
 			getFbTime
 		elif [ ${detect,,} == "n" ]
 		then
@@ -405,7 +414,7 @@ arcFbCheck() {
 	kill $pid1
 	local version=$(sed -n "2 {/version/p}" logcat_fb_version.txt | awk -F ':' '{print $3}' | awk '{print $1}')
 	echo "   [FB版本为：$version]"
-	rm -rf logcat_fb_version.txt
+	rm logcat_fb_version.txt
 	while ! [ -s logcat_fb_current_level.txt ]
 	do
 		continue
@@ -413,7 +422,7 @@ arcFbCheck() {
 	kill $pid2
 	local currLev=$(sed -n "/mCurrValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}')
 	echo -e "   [FB当前的等级为:$currLev]\n"
-	rm -rf logcat_fb_current_level.txt
+	rm logcat_fb_current_level.txt
 	getFbTime
 	sleep 1
 	while true
@@ -433,7 +442,7 @@ arcFbCheck() {
 			kill $pid
 			currLev=$(sed -n "/onValueChanged/p" logcat_fb_current_level.txt | awk -F ':' '{print $3}')
 			echo -e "   [FB当前的等级为:$currLev]\n"
-			rm -rf logcat_fb_current_level.txt
+			rm logcat_fb_current_level.txt
 			getFbTime
 		elif [ ${detect,,} == "n" ]
 		then
@@ -534,7 +543,7 @@ stPortraitCheck() {
 	kill $pid1
 	local version=$(sed -n "/version/p" logcat_portrait_prev_version.txt | awk -F '=' '{print $2}')
 	echo "  [Portrait预览虚化版本为：$version]"
-	rm -rf logcat_portrait_prev_version.txt
+	rm logcat_portrait_prev_version.txt
 	if [ ${product^^} == "A665L" ]
 	then
 		echo ""
@@ -547,7 +556,7 @@ stPortraitCheck() {
 	kill $pid2
 	version=$(sed -n "2 {/version/p}" logcat_portrait_cap_version.txt | awk -F '=' '{print $2}')
 	echo -e "  [Portrait拍照虚化版本为：$version]\n"
-	rm -rf logcat_portrait_cap_version.txt
+	rm logcat_portrait_cap_version.txt
 	sleep 1
 }
 
@@ -579,8 +588,8 @@ arcFilterCheck() {
 	sed -n "2p" logcat_filter_cap_begin_time.txt
 	echo -n "   "
 	sed -n "2p" logcat_filter_cap_end_time.txt
-	rm -rf logcat_filter_cap_begin_time.txt
-	rm -rf logcat_filter_cap_end_time.txt
+	rm logcat_filter_cap_begin_time.txt
+	rm logcat_filter_cap_end_time.txt
 	echo ""
 	sleep 1
 }
@@ -607,14 +616,82 @@ tranPhotoWMCheck() {
 	sed -n "2p" logcat_photo_wm_cap_begin_time.txt
 	echo -n "   "
 	sed -n "2p" logcat_photo_wm_cap_end_time.txt
-	rm -rf logcat_photo_wm_cap_begin_time.txt
-	rm -rf logcat_photo_wm_cap_end_time.txt
+	rm logcat_photo_wm_cap_begin_time.txt
+	rm logcat_photo_wm_cap_end_time.txt
 	echo ""
 	sleep 1
 }
 
 tranVideoWMCheck() {
 	adb logcat -c
+	echo ""
+}
+
+continuousCapCheck() {
+	echo " • ContinuousCapExceptionCheck"
+	adb logcat -c
+	if [ ${fb_brand,,} ==  "tran" ]
+	then
+		local TAG="TranCam-FaceBeauty"
+	elif [ ${fb_brand,,} == "arc" ]
+	then
+		local TAG="TranCam-ArcFaceBeauty"
+	else
+		echo "   请检查配置文件中所选项目的FB_ALGO值，目前只支持tran或arc，可不区分大小写"
+		echo "   [连拍异常未成功检测，请稍后重试]"
+		return
+	fi
+	read -p "   请确保关闭[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认"
+	echo "   请进行连拍"
+	adb logcat -v brief -b main $TAG *:S --regex "not process" > logcat_continuous_cap_fb.txt &
+	local pid1=$!
+	adb logcat -v brief -b main singlecam_blur_capture *:S > logcat_continuous_cap_blur.txt &
+	local pid2=$!
+	adb logcat -v brief -b main MFNRNode *:S > logcat_continuous_cap_mfnr.txt &
+	local pid3=$!
+	read -p "   请在完成连拍后回车确认"
+	echo ""
+	sleep 1
+	kill $pid1
+	kill $pid2
+	kill $pid3
+	if [ -s logcat_continuous_cap_fb.txt ]
+	then
+		echo "   连拍时未执行美颜算法"
+	else
+		echo "   ERROR：连拍时可能执行了美颜算法"
+	fi
+	if ! [ -s logcat_continuous_cap_blur.txt ]
+	then
+		echo "   连拍时未执行虚化算法"
+	else
+		echo "   ERROR：连拍时可能执行了虚化算法"
+	fi
+	if ! [ -s logcat_continuous_cap_mfnr.txt ]
+	then
+		echo "   连拍时未执行MFNR算法"
+	else
+		echo "   ERROR：连拍时可能执行了MFNR算法"
+	fi
+	rm logcat_continuous_cap_fb.txt
+	rm logcat_continuous_cap_blur.txt
+	rm logcat_continuous_cap_mfnr.txt
+	echo ""
+}
+
+exceptionCheck() {
+	echo "◆ ExceptionCheck"
+	if [ ${continuous_cap,,} == "yes" ]
+	then
+		continuousCapCheck
+	elif [ ${continuous_cap,,} == "no" ]
+	then
+		sleep 1
+	else
+		echo "   请检查配置文件中所选项目的CONTINUOUS_CAP值，只能为yes或no，可不区分大小写"
+		echo "   [连拍异常未成功检测，请稍后重试]"
+	fi
+	#TODO
 }
 
 camCheck() {
@@ -746,6 +823,7 @@ camCheck() {
 		echo "   请检查配置文件中所选项目的VIDEO_WM值，只能为yes或no，可不区分大小写"
 		echo "   [视频水印未成功检测，请稍后重试]"
 	fi
+	exceptionCheck
 }
 
 main() {
