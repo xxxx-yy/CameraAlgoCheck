@@ -136,7 +136,7 @@ tranAsdCheck() {
 	echo -e "   [ASD版本为：$version]\n"
 	rm logcat_ai_asd.txt
 	sleep 1
-	#TODO
+	#TODO（current scene）
 }
 
 AICamAsdCheck() {
@@ -199,14 +199,20 @@ sprdHdrCheck() {
 	then
 		local version=$(sed -n "/HDR lib version/p" logcat_ai_hdr_version.txt | awk -F ':' '{print $4}' | awk -F ',' '{print $1}')
 		echo "   [HDR版本为：$version]"
+		echo "   HDR拍照时间："
 		echo -n "   "
 		sed -n "2p" logcat_ai_hdr_begin_time.txt
 		echo -n "   "
 		sed -n "2p" logcat_ai_hdr_end_time.txt
+		local startTime=$(sed -n "2p" logcat_ai_hdr_begin_time.txt | awk '{print $1 " " $2}')
+		local endTime=$(sed -n "2p" logcat_ai_hdr_end_time.txt | awk '{print $1 " " $2}')
+		local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+		echo "   时间差：$time ms"
 	elif [ ${android_version^^} == "S" ]
 	then
 		local version=$(sed -n "/CAM_ALGO_CV_HDR2_LIBVER/p" logcat_ai_hdr_version.txt | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
 		echo "   [HDR版本为：$version]"
+		#TODO（执行时间）
 	else
 		echo "   请检查配置文件中所选项目的ANDROID_VERSION值，目前只支持T或S，可不区分大小写"
 		echo "   [HDR未成功检测，请稍后重试]"
@@ -286,12 +292,18 @@ getFbTime() {
 		tail -n 3 logcat_fb_prev_time.txt | head -n 1
 		echo -n "   "
 		tail -n 2 logcat_fb_prev_time.txt | head -n 1
+		local startTime=$(tail -n 3 logcat_fb_prev_time.txt | head -n 1 | awk '{print $1 " " $2}')
+		local endTime=$(tail -n 2 logcat_fb_prev_time.txt | head -n 1 | awk '{print $1 " " $2}')
 	else
 		echo -n "   "
 		tail -n 2 logcat_fb_prev_time.txt | head -n 1
 		echo -n "   "
 		tail -n 1 logcat_fb_prev_time.txt
+		local startTime=$(tail -n 2 logcat_fb_prev_time.txt | head -n 1 | awk '{print $1 " " $2}')
+		local endTime=$(tail -n 1 logcat_fb_prev_time.txt | awk '{print $1 " " $2}')
 	fi
+	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	echo "   时间差：$time ms"
 	rm logcat_fb_prev_time.txt
 	echo ""
 	adb logcat -c
@@ -315,6 +327,10 @@ getFbTime() {
 	sed -n "2p" logcat_fb_cap_begin_time.txt
 	echo -n "   "
 	sed -n "2p" logcat_fb_cap_end_time.txt
+	startTime=$(sed -n "2p" logcat_fb_cap_begin_time.txt | awk '{print $1 " " $2}')
+	endTime=$(sed -n "2p" logcat_fb_cap_end_time.txt | awk '{print $1 " " $2}')
+	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	echo "   时间差：$time ms"
 	rm logcat_fb_cap_begin_time.txt
 	rm logcat_fb_cap_end_time.txt
 	echo ""
@@ -332,6 +348,18 @@ tranFbCheck() {
 	adb logcat -v brief -b main CamAp_ItelFaceBeautySet:I *:S --regex "mCurrentEntryValue" > logcat_fb_current_level.txt &
 	local pid3=$!
 	echo "   $1"
+	while ! [ -s logcat_fb_current_level.txt ]
+	do
+		continue
+	done
+	kill $pid3
+	local currLev=$(sed -n "/mCurrentEntryValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
+	echo "   [FB当前的等级为:$currLev]"
+	rm logcat_fb_current_level.txt
+	if [ $currLev == 0 ]
+	then
+		read -p "   当前美颜为关闭状态，请开启美颜后按下回车"
+	fi
 	while ! [ -s logcat_fb_version.txt ]
 	do
 		continue
@@ -346,21 +374,9 @@ tranFbCheck() {
 	done
 	kill $pid2
 	local levelList=$(sed -n "/supportList/p" logcat_fb_level_list.txt | awk -F ':' '{print $3}')
-	echo -e "   [配置文件中配置的该项目FB支持的最高等级为：$fb_level]"
-	echo -e "   [FB实际支持的等级有：$levelList]"
+	echo "   [配置文件中配置的该项目FB支持的最高等级为：$fb_level]"
+	echo -e "   [FB实际支持的等级有：$levelList]\n"
 	rm logcat_fb_level_list.txt
-	while ! [ -s logcat_fb_current_level.txt ]
-	do
-		continue
-	done
-	kill $pid3
-	local currLev=$(sed -n "/mCurrentEntryValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
-	echo -e "   [FB当前的等级为:$currLev]\n"
-	rm logcat_fb_current_level.txt
-	if [ $currLev == 0 ]
-	then
-		read -p "   当前美颜为关闭状态，请开启美颜后按下回车"
-	fi
 	getFbTime
 	while true
 	do
@@ -415,6 +431,7 @@ arcFbCheck() {
 	local version=$(sed -n "2 {/version/p}" logcat_fb_version.txt | awk -F ':' '{print $3}' | awk '{print $1}')
 	echo "   [FB版本为：$version]"
 	rm logcat_fb_version.txt
+	#TODO（支持的等级列表）
 	while ! [ -s logcat_fb_current_level.txt ]
 	do
 		continue
@@ -557,6 +574,7 @@ stPortraitCheck() {
 	version=$(sed -n "2 {/version/p}" logcat_portrait_cap_version.txt | awk -F '=' '{print $2}')
 	echo -e "  [Portrait拍照虚化版本为：$version]\n"
 	rm logcat_portrait_cap_version.txt
+	#TODO（执行时间）
 	sleep 1
 }
 
@@ -588,6 +606,10 @@ arcFilterCheck() {
 	sed -n "2p" logcat_filter_cap_begin_time.txt
 	echo -n "   "
 	sed -n "2p" logcat_filter_cap_end_time.txt
+	local startTime=$(sed -n "2p" logcat_filter_cap_begin_time.txt | awk '{print $1 " " $2}')
+	local endTime=$(sed -n "2p" logcat_filter_cap_end_time.txt | awk '{print $1 " " $2}')
+	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	echo "   时间差：$time ms"
 	rm logcat_filter_cap_begin_time.txt
 	rm logcat_filter_cap_end_time.txt
 	echo ""
@@ -600,6 +622,7 @@ tranPhotoWMCheck() {
 	local pid1=$!
 	adb logcat -v time -b main TranCam-WaterMark:I *:S --regex "\[processRaw\]\-|\[processRaw\]X" > logcat_photo_wm_cap_end_time.txt &
 	local pid2=$!
+	#TODO（版本号）
 	echo "   请开启水印后进行拍照"
 	while ! [ -s logcat_photo_wm_cap_begin_time.txt ]
 	do
@@ -616,6 +639,10 @@ tranPhotoWMCheck() {
 	sed -n "2p" logcat_photo_wm_cap_begin_time.txt
 	echo -n "   "
 	sed -n "2p" logcat_photo_wm_cap_end_time.txt
+	local startTime=$(sed -n "2p" logcat_photo_wm_cap_begin_time.txt | awk '{print $1 " " $2}')
+	local endTime=$(sed -n "2p" logcat_photo_wm_cap_end_time.txt | awk '{print $1 " " $2}')
+	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	echo "   时间差：$time ms"
 	rm logcat_photo_wm_cap_begin_time.txt
 	rm logcat_photo_wm_cap_end_time.txt
 	echo ""
@@ -625,6 +652,7 @@ tranPhotoWMCheck() {
 tranVideoWMCheck() {
 	adb logcat -c
 	echo ""
+	#TODO（版本，时间）
 }
 
 continuousCapCheck() {
@@ -641,7 +669,7 @@ continuousCapCheck() {
 		echo "   [连拍异常未成功检测，请稍后重试]"
 		return
 	fi
-	read -p "   请确保关闭[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认"
+	read -p "   请确保关闭[AI]、[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认"
 	echo "   请进行连拍"
 	adb logcat -v brief -b main $TAG *:S --regex "not process" > logcat_continuous_cap_fb.txt &
 	local pid1=$!
