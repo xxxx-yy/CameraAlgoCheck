@@ -276,6 +276,7 @@ mfnrCheck() {
 			continue
 		fi
 	done
+	kill $pid3
 	echo "   MFNR拍照时间："
 	echo -n "   "
 	sed -n "/mSavedFrameNum:0/p" logcat_mfnr_begin_time.txt
@@ -722,7 +723,6 @@ tranVideoWMCheck() {
 
 continuousCapCheck() {
 	echo " • ContinuousCapExceptionCheck"
-	adb logcat -c
 	if [ ${fb_brand,,} ==  "tran" ]
 	then
 		local TAG="TranCam-FaceBeauty"
@@ -736,9 +736,10 @@ continuousCapCheck() {
 	fi
 	read -p "   * 请确保关闭[AI]、[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认 *"
 	echo "   * 请进行连拍 *"
-	adb logcat -v brief -b main $TAG *:S > logcat_continuous_cap_fb.txt &
+	adb logcat -c
+	adb logcat -v brief -b main $TAG *:S --regex "\[processRaw\]" > logcat_continuous_cap_fb.txt &
 	local pid1=$!
-	adb logcat -v brief -b main singlecam_blur_capture *:S > logcat_continuous_cap_blur.txt &
+	adb logcat -v brief -b main TranCam-STSingleBlur *:S --regex "\[processRaw\]" > logcat_continuous_cap_blur.txt &
 	local pid2=$!
 	adb logcat -v brief -b main MFNRNode *:S > logcat_continuous_cap_mfnr.txt &
 	local pid3=$!
