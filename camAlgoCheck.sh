@@ -136,7 +136,42 @@ tranAsdCheck() {
 	echo -e "   [ASD版本为：$version]\n"
 	rm logcat_ai_asd.txt
 	sleep 1
-	#TODO（current scene）
+	while true
+	do
+		adb logcat -c
+		adb logcat -v brief -b main TranCam-ASD:D *:S --regex "ASD to APP result" > logcat_ai_asd.txt &
+		pid=$!
+		read -p "   * 请将手机对准需要识别的场景后按下回车 *"
+		while ! [ -s logcat_ai_asd.txt ]
+		do
+			continue
+		done
+		kill $pid
+		local illumination_type=$(sed -n "2p" logcat_ai_asd.txt | awk -F ':' '{print $3}' | awk -F ',' '{print $1}' | awk -F '=' '{print $2}')
+		local scene_type=$(sed -n "2p" logcat_ai_asd.txt | awk -F ':' '{print $3}' | awk -F ',' '{print $2}' | awk -F '=' '{print $2}')
+		echo "   ASD识别结果："
+		echo "   [明亮度：$illumination_type]"
+		echo -e "   [场景：$scene_type]\n"
+		rm logcat_ai_asd.txt
+		while true
+		do
+			echo -n "   是否继续识别？（Y,y/N,n）（直接回车默认Y,y）"
+			read detect
+			if [ -z $detect ] || [ ${detect,,} == "y" ] || [ ${detect,,} == "n" ]
+			then
+				break
+			else
+				echo "   请输入 'Y/y' or 'N/n'"
+			fi
+		done
+		if [ -z $detect ] || [ ${detect,,} == "y" ]
+		then
+			continue
+		else
+			echo ""
+			break
+		fi
+	done
 }
 
 AICamAsdCheck() {
@@ -246,10 +281,23 @@ mfnrCheck() {
 	adb logcat -c
 	adb logcat -v brief -b main TDNS_LOG:D *:S --regex "CAM_ALGO_CV_MFNR_LIBVER" > logcat_mfnr.txt &
 	local pid1=$!
-	adb logcat -v time -b main MFNRNode:D *:S --regex "cap_MFNR" > logcat_mfnr_begin_time.txt &
-	local pid2=$!
-	adb logcat -v time -b main MFNRNode *:S --regex "X, ret = 0" > logcat_mfnr_end_time.txt &
-	local pid3=$!
+	if [ ${android_version^^} == "T" ]
+	then
+		adb logcat -v time -b main MFNRNode:D *:S --regex "cap_MFNR" > logcat_mfnr_begin_time.txt &
+		local pid2=$!
+		adb logcat -v time -b main MFNRNode *:S --regex "X, ret = 0" > logcat_mfnr_end_time.txt &
+		local pid3=$!
+	elif [ ${android_version^^} == "S" ]
+	then
+		adb logcat -v time -b main ips_core:I *:S --regex "ipm_mfnr" > logcat_mfnr_begin_time.txt &
+		local pid2=$!
+		adb logcat -v time -b main ips_core *:S --regex "mfnr done" > logcat_mfnr_end_time.txt &
+		local pid3=$!
+	else
+		echo "   请检查配置文件中所选项目的ANDROID_VERSION值，目前只支持T或S，可不区分大小写"
+		echo "   [MFNR未成功检测，请稍后重试]"
+		return
+	fi
 	sleep 1
 	echo "   * 请关闭闪光灯，并使用后摄在暗环境下拍摄一张照片 *"
 	while ! [ -s logcat_mfnr.txt ]
@@ -279,10 +327,10 @@ mfnrCheck() {
 	kill $pid3
 	echo "   MFNR拍照时间："
 	echo -n "   "
-	sed -n "/mSavedFrameNum:0/p" logcat_mfnr_begin_time.txt
+	sed -n "2p" logcat_mfnr_begin_time.txt
 	echo -n "   "
 	sed -n "6p" logcat_mfnr_end_time.txt
-	local startTime=$(sed -n "/mSavedFrameNum:0/p" logcat_mfnr_begin_time.txt | awk '{print $1 " " $2}')
+	local startTime=$(sed -n "2p" logcat_mfnr_begin_time.txt | awk '{print $1 " " $2}')
 	local endTime=$(sed -n "6p" logcat_mfnr_end_time.txt | awk '{print $1 " " $2}')
 	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
 	echo -e "   时间差：$time ms\n"
@@ -461,7 +509,7 @@ arcFbCheck() {
 	done
 	kill $pid2
 	local currLev=$(sed -n "/mCurrValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}')
-	echo -e "   [FB当前的等级为:$currLev]\n"
+	echo "   [FB当前的等级为:$currLev]"
 	rm logcat_fb_current_level.txt
 	if [ $currLev == 0 ]
 	then
@@ -485,7 +533,7 @@ arcFbCheck() {
 		if [ -z $detect ] || [ ${detect,,} == "y" ]
 		then
 			adb logcat -c
-			adb logcat -v brief -b main CamAp_FaceBeauty:I *:S --regex "onValueChanged" > logcat_fb_current_level.txt &
+			adb logcat -v brief -b main CamAp_FaceBeautyParamet:D *:S --regex "configParameters" > logcat_fb_current_level.txt &
 			local pid=$!
 			echo "   * 请切换美颜等级 *"
 			while ! [ -s logcat_fb_current_level.txt ]
@@ -493,7 +541,7 @@ arcFbCheck() {
 				continue
 			done
 			kill $pid
-			currLev=$(sed -n "/onValueChanged/p" logcat_fb_current_level.txt | awk -F ':' '{print $3}')
+			currLev=$(sed -n "2p" logcat_fb_current_level.txt | awk -F ',' '{print $2}' | awk -F ':' '{print $2}')
 			echo -e "   [FB当前的等级为:$currLev]\n"
 			rm logcat_fb_current_level.txt
 			if [ $currLev == 0 ]
@@ -583,22 +631,12 @@ stPortraitCheck() {
 	adb logcat -v brief -b main singlecam_blur_capture:I *:S --regex "version" > logcat_portrait_cap_version.txt &
 	local pid2=$!
 	adb logcat -c
-	adb logcat -v time -b main TranCam-STSingleBlur:I *:S --regex "\[processRaw\]E" > logcat_portrait_cap_begin_time.txt &
+	adb logcat -v time -b main TranCam-STSingleBlur *:S --regex "\[processRaw\]E" > logcat_portrait_cap_begin_time.txt &
 	local pid3=$!
 	adb logcat -c
-	adb logcat -v time -b main TranCam-STSingleBlur:I *:S --regex "\[processRaw\]X" > logcat_portrait_cap_end_time.txt &
+	adb logcat -v time -b main TranCam-STSingleBlur *:S --regex "\[processRaw\]X" > logcat_portrait_cap_end_time.txt &
 	local pid4=$!
-	sleep 1
-	if [ ${product^^} == "A665L" ]
-	then
-		echo "  * 请进入或重新进入人像模式 *"
-	elif [ ${product^^} == "BF6" ] || [ ${product^^} == "X6516" ]
-	then
-		echo "  * 请进入或重新进入人像模式后摄 *"
-	else
-		echo "   请检查配置文件中所选项目的PRODUCT值，目前只支持A665L、BF6或X6516，可不区分大小写"
-		echo "   [Portrait模式未成功检测，请稍后重试]"
-	fi
+	echo "  * 请进入或重新进入人像模式 *"
 	while ! [ -s logcat_portrait_prev_version.txt ]
 	do
 		continue
@@ -620,6 +658,11 @@ stPortraitCheck() {
 	version=$(sed -n "2 {/version/p}" logcat_portrait_cap_version.txt | awk -F '=' '{print $2}')
 	echo "  [Portrait拍照虚化版本为：$version]"
 	rm logcat_portrait_cap_version.txt
+	if ! [ ${product^^} == "A665L" ]
+	then
+		echo ""
+		echo "  * 请识别到人脸后进行拍照 *"
+	fi
 	while ! [ -s logcat_portrait_cap_begin_time.txt ]
 	do
 		continue
