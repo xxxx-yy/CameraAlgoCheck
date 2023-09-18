@@ -1,31 +1,104 @@
 configPath=./config.txt
+TIME_WAIT_NORMAL=1
+TIME_WAIT_PREVIEW_RESULT=5
+TIME_WAIT_CAPTURE_DONE=5
 
+AISCENE_RESULT_ENUM=("Default" "食物" "人像" "植物" "N/A" "夜景" "N/A" "文档" "N/A" "N/A" "N/A" "N/A" "N/A" "N/A" "N/A" "花朵")
+
+#LOG_TAG:LOG_LEVEL	KEY_WORD	LOG_FILE
+SPRD_AISCENE_VERSION_INFO=("AIC:I" "CAM_ALGO_CV_SD_LIBVER" "logcat_ai_scene_version.txt")
+SPRD_AISCENE_RESULT_INFO=("Cam3OEMIf:D" "sprd_ai_scene_type_current" "logcat_ai_scene_result.txt")
+
+TRAN_ASD_VERSION_INFO=("TranCam-ASD:I" "Version" "logcat_ai_asd_version.txt")
+TRAN_ASD_RESULT_INFO=("TranCam-ASD:D" "ASD to APP result" "logcat_ai_asd_result.txt")
+
+SPRD_HDR_VERSION_INFO=("hdr2:D" "hdr" "logcat_ai_hdr_version.txt")
+SPRD_HDR_CAP_TIME_INFO=("sprdhdr2:I" "sprd_hdr_process:" "logcat_ai_hdr_cap_time.txt")
+
+SPRD_MFNR_VERSION_INFO=("TDNS_LOG:D" "CAM_ALGO_CV_MFNR_LIBVER" "logcat_mfnr_version.txt")
+SPRD_MFNR_CAP_BEGIN_INFO=("TDNS_LOG:D" "mfnr init handle pos" "logcat_mfnr_begin_time.txt")
+SPRD_MFNR_CAP_END_INFO=("TDNS_LOG:D" "mfnr_deinit func finish, run time" "logcat_mfnr_end_time.txt")
+
+TRAN_FB_VERSION_INFO=("TranCam-FaceBeauty:I" "tran FB version" "logcat_fb_version.txt")
+TRAN_FB_LEVELS_INFO=("CamAp_ItelFaceBeautySet:I" "supportList" "logcat_fb_level_list.txt")
+TRAN_FB_INDEX_INFO=("CamAp_ItelFaceBeautySet:I" "mCurrentEntryValue" "logcat_fb_current_level.txt")
+TRAN_FB_PREV_PERF_INFO=("TranCam-FaceBeauty:D" "\[processPreview\]E|\[processPreview\]X ret=0" "logcat_fb_prev_time.txt")
+TRAN_FB_CAP_BEGIN_INFO=("TranCam-FaceBeauty:D" "\[processRaw\]E" "logcat_fb_cap_begin_time.txt")
+TRAN_FB_CAP_END_INFO=("TranCam-FaceBeauty:D" "\[processRaw\]X ret=0" "logcat_fb_cap_end_time.txt")
+TRAN_FB_CUR_INDEX_INFO=("CamAp_ItelFaceBeautySet:D" "set Degree To Devices|\[updateEntryView\] mCurrentEntryValue" "logcat_fb_cur_index.txt")
+
+ST_PORTRAIT_PREV_VERSION_INFO=("singlecam_blur_preview:I" "version" "logcat_portrait_prev_version.txt")
+ST_PORTRAIT_CAP_VERSION_INFO=("singlecam_blur_capture:I" "version" "logcat_portrait_cap_version.txt")
+ST_PORTRAIT_CAP_BEGIN_INFO=("TranCam-STSingleBlur:I" "\[processRaw\]E" "logcat_portrait_cap_begin_time.txt")
+ST_PORTRAIT_CAP_END_INFO=("TranCam-STSingleBlur:I" "\[processRaw\]X" "logcat_portrait_cap_end_time.txt")
+
+ARC_FILTER_CAP_BEGIN_INFO=("TranCam-ArcFilter:I" "\[processRaw\]\+" "logcat_filter_cap_begin_time.txt")
+ARC_FILTER_CAP_END_INFO=("TranCam-ArcFilter:I" "\[processRaw\]\-" "logcat_filter_cap_end_time.txt")
+
+TRAN_PHOTO_WM_BEGIN_TIME=("TranCam-WaterMark:I" "\[processRaw\]\+|\[processRaw\]E" "logcat_photo_wm_cap_begin_time.txt")
+TRAN_PHOTO_WM_END_TIME=("TranCam-WaterMark:I" "\[processRaw\]\-|\[processRaw\]X" "logcat_photo_wm_cap_end_time.txt")
+
+aiscene_version_pid=0
+aiscene_result_pid=0
+asd_version_pid=0
+asd_result_pid=0
+tran_fb_version_pid=0
+tran_fb_levels_pid=0
+tran_fb_index_pid=0
+tran_fb_perf_pid=0
+st_portrait_prev_version_pid=0
+
+sprd_hdr_version_pid=0
+sprd_hdr_cap_time_pid=0
+sprd_mfnr_version_pid=0
+sprd_mfnr_version_begin_pid=0
+sprd_mfnr_version_end_pid=0
+tran_fb_cap_begin_pid=0
+tran_fb_cap_end_pid=0
+st_portrait_cap_version_pid=0
+st_portrait_cap_begin_pid=0
+st_portrait_cap_end_pid=0
+arc_filter_cap_begin_pid=0
+arc_filter_cap_end_pid=0
+tran_photoWM_cap_begin_pid=0
+tran_photoWM_cap_end_pid=0
+
+#==============================================================================
+# 欢迎界面
+#==============================================================================
 hint() {
-	echo " --------------------------------------------------------------- "
-	echo "| Preconditions: 请在执行该脚本前确认并修改配置文件的信息，     |"
-	echo "|                并将配置文件与该脚本放置在同一路径下。         |"
-	echo " --------------------------------------------------------------- "
-	echo "| Tips: 该脚本为半自动化测试，请根据提示信息寻找场景配合测试。  |"
-	echo " --------------------------------------------------------------- "
+	echo "********************************************************************"
+	echo "* Preconditions: 请在执行该脚本前确认并修改配置文件的信息，        *"
+	echo "*                并将配置文件与该脚本放置在同一路径下。            *"
+	echo "********************************************************************"
+	echo "* Tips: 该脚本为半自动化测试，请根据提示信息寻找场景配合测试。     *"
+	echo "********************************************************************"
 }
 
+#==============================================================================
+# 读取${configPath}文件中配置的可支持的检查项目
+#==============================================================================
 getProductList() {
 	productList=($(grep "PRODUCT=" $configPath | awk -F '=' '{print $2}'))
 }
 
+#==============================================================================
+# 根据用户选择的测试项目，读取${configPath}文件的对应项目所在的行
+#==============================================================================
 getRegion() {
     local productName=$1
     cat -n $configPath | grep "PRODUCT=" | grep -A 1 "PRODUCT=$productName" | awk '{print $1}' | xargs
 }
 
+#==============================================================================
+# 根据用户选择的测试项目，读取${configPath}文件的对应项目配置
+#==============================================================================
 getConfig() {
     local productName=$1
-
     local region=$(getRegion $productName)
     local startLine=$(echo $region | awk '{print $1}')
     local endLine=$(echo $region | awk '{print $2}')
-	if [ ! $endLine ]
-	then
+	if [ ! $endLine ]; then
 		endLine=$(cat -n $configPath | tail -n 1 | awk '{print $1}')
 	else
 		endLine=$(($endLine-1))
@@ -33,7 +106,6 @@ getConfig() {
 	product=$(sed -n "${startLine}, ${endLine} {/PRODUCT=.*/p}" $configPath | awk -F '=' '{print $2}')
 	android_version=$(sed -n "${startLine}, ${endLine} {/ANDROID_VERSION=.*/p}" $configPath | awk -F '=' '{print $2}')
 	brand=$(sed -n "${startLine}, ${endLine} {/BRAND=.*/p}" $configPath | awk -F '=' '{print $2}')
-	photo_asd=$(sed -n "${startLine}, ${endLine} {/PHOTO_ASD=.*/p}" $configPath | awk -F '=' '{print $2}')
 	photo_hdr=$(sed -n "${startLine}, ${endLine} {/PHOTO_HDR=.*/p}" $configPath | awk -F '=' '{print $2}')
 	photo_lowlight=$(sed -n "${startLine}, ${endLine} {/PHOTO_LOWLIGHT=.*/p}" $configPath | awk -F '=' '{print $2}')
 	photo_fb=$(sed -n "${startLine}, ${endLine} {/PHOTO_FB=.*/p}" $configPath | awk -F '=' '{print $2}')
@@ -54,8 +126,16 @@ getConfig() {
 	photo_wm_brand=$(sed -n "${startLine}, ${endLine} {/PHOTO_WM_ALGO=.*/p}" $configPath | awk -F '=' '{print $2}')
 	video_wm_brand=$(sed -n "${startLine}, ${endLine} {/VIDEO_WM_ALGO=.*/p}" $configPath | awk -F '=' '{print $2}')
 	continuous_cap=$(sed -n "${startLine}, ${endLine} {/CONTINUOUS_CAP=.*/p}" $configPath | awk -F '=' '{print $2}')
+	if [ ${brand,,} == "tecno" ] || [ ${brand,,} == "itel" ] || [ ${brand,,} == "infinix" ]; then
+		printNormalTip "当前相机brand为${brand}"
+	else
+		echo "ERROR!!!请检查配置文件中的brand配置，本脚本只支持检查TECNO、ITEL或INFINIX其中一种。\n"
+	fi
 }
 
+#==============================================================================
+# 提示用户选择对应的测试项目
+#==============================================================================
 chooseProduct() {
 	local num=0
 	for item in ${productList[*]}
@@ -63,925 +143,936 @@ chooseProduct() {
 		num=$(($num+1))
 		echo "$num: $item"
 	done
-	echo -n "请选择项目名（若选项中无所需项目，请在配置文件中按要求添加）: "
+	echo -n "请选择项目名[若选项中无所需项目，请在配置文件中按要求添加]: "
 	read num
-	echo "读取配置文件中，请稍后。。。"
+	echo "读取配置文件中，请稍后..."
 	getConfig ${productList[$(($num-1))]}
 }
 
-sprdAISceneCheck() {
+#==============================================================================
+# 格式化输出每个模式场景的名称
+# $1 : 模式场景的名称
+#==============================================================================
+printModeName() {
+	echo "********************************************************************"
+	echo "模式场景: $1"
+	echo "********************************************************************"
+}
+
+#==============================================================================
+# 格式化每个模式场景中需要检查的算法的简称
+# $1 : 算法的简称
+#==============================================================================
+printAlgoName() {
+	echo "算法名称: $1"
+	echo "--------------------------------------------------------------------"
+}
+
+#==============================================================================
+# 格式化每个模式场景中检查的交互语句
+# $1 : 交互语句
+#==============================================================================
+printInteractTip() {
+	echo -n "提    示: $1"
+}
+
+#==============================================================================
+# 输出分隔行
+#==============================================================================
+printDivideLine() {
+	echo "--------------------------------------------------------------------"
+}
+
+#==============================================================================
+# 格式化每个模式场景中检查的提示信息
+# $1 : 提示信息
+#==============================================================================
+printNormalTip() {
+	echo "提    示: $1"
+	echo "--------------------------------------------------------------------"
+}
+
+#==============================================================================
+# 格式化每个模式场景中检查的结果
+# $1 : 结果内容
+#==============================================================================
+printResult() {
+	echo -e "检查结果: \e[32m$1\e[0m"
+	echo "--------------------------------------------------------------------"
+}
+
+#==============================================================================
+# 格式化输出异常结果
+# $1 : 结果内容
+#==============================================================================
+printErrorResult() {
+	echo -e "\e[31m检查结果: \e[32m$1\e[0m"
+	echo "--------------------------------------------------------------------"
+}
+
+#==============================================================================
+# 格式化输出配置错误的提示信息
+# $1 : 错误提示语
+# $2 : 配置错误的名称
+# $3 : 配置的可选参数 1
+# $4 : 配置的可选参数 2
+#==============================================================================
+printErrorConfigMsgAndExit() {
+	echo -e "\e[31m===>[$1]场景检查失败，请稍后重试\e[0m"
+	echo -e "\e[31m===>请检查[$2]配置是否正确，可配置选项为[$3|$4]，不区分大小写\e[0m"
+	exit 1
+}
+
+#==============================================================================
+# 用于正常删除文件
+#==============================================================================
+deleteFile() {
+	if [ -e $1 ]; then 
+		rm $1
+	fi
+}
+
+#==============================================================================
+# 抓取预览过程中关键信息
+# $1 : LOG_TAG:LOG_LEVEL
+# $2 : 日志关键字
+# $3 : 日志保存文件
+#==============================================================================
+grabOneInfo() {
+	adb logcat -v brief -b main $1 *:S --regex "$2" > $3 &
+	echo "$!"
+}
+
+#==============================================================================
+# 抓取预览过程中关键信息
+# $1 : LOG_TAG:LOG_LEVEL
+# $2 : 日志关键字
+# $3 : 日志保存文件
+#==============================================================================
+grabOneInfoWithTime() {
+	adb logcat -v time -b main $1 *:S --regex "$2" > $3 &
+	echo "$!"
+}
+
+#==============================================================================
+# 开始预览场景所有算法和功能的关键信息抓取
+#==============================================================================
+previewStartGrabInfos() {
+	printInteractTip "生成的中间文件即将被覆盖，如需查看请先查看，按回车确认覆盖"
+	read CMD
+	printDivideLine
 	adb logcat -c
-	adb logcat -v brief -b main AIC:I *:S --regex "CAM_ALGO_CV_SD_LIBVER" > logcat_ai_asd.txt &
-	local pid=$!
-	echo "   * 请进入或返回键退出后重新进入相机 *"
-	while ! [ -s logcat_ai_asd.txt ]
-	do
-		continue
-	done
-	kill $pid
-	local version=$(sed -n "/CAM_ALGO_CV_SD_LIBVER/p" logcat_ai_asd.txt | awk -F '[' '{print $3}' | awk -F ']' '{print $1}')
-	echo -e "   [ASD版本为：$version]\n"
-	rm logcat_ai_asd.txt
-	sleep 1
+	#sprd aiscene
+	deleteFile ${SPRD_AISCENE_VERSION_INFO[2]}
+	deleteFile ${SPRD_AISCENE_RESULT_INFO[2]}
+	aiscene_version_pid=$(grabOneInfo "${SPRD_AISCENE_VERSION_INFO[@]}")
+	aiscene_result_pid=$(grabOneInfo "${SPRD_AISCENE_RESULT_INFO[@]}")
 	
-	echo "   * 请确保开启快速功能栏中的AI *"
-	echo "   [0:Default][1:Food][2:Portrait][3:Plant][5:NightScene][7:Text][15:Flower]"
-	sleep 1
-	while true
-	do
-		adb logcat -c
-		adb logcat -v brief -b main Cam3OEMIf:D *:S --regex "sprd_ai_scene_type_current" > logcat_ai_asd.txt &
-		pid=$!
-		echo "   ...场景检测中，请保持手机对准需要识别的场景..."
-		while ! [ -s logcat_ai_asd.txt ]
-		do
-			continue
-		done
-		kill $pid
-		local type=$(sed -n "2 {/sprd_ai_scene_type_current/p}" logcat_ai_asd.txt | awk -F ':' '{print $4}')
-		echo -e "   [ASD识别到的场景为：$type]\n"
-		rm logcat_ai_asd.txt
-		while true
-		do
-			echo -n "   是否继续识别？（Y,y/N,n）（直接回车默认Y,y）"
-			read detect
-			if [ -z $detect ] || [ ${detect,,} == "y" ] || [ ${detect,,} == "n" ]
-			then
-				break
-			else
-				echo "   请输入 'Y/y' or 'N/n'"
-			fi
-		done
-		if [ -z $detect ] || [ ${detect,,} == "y" ]
-		then
-			continue
-		else
-			echo ""
-			break
-		fi
-	done
+	#tran asd
+	deleteFile ${TRAN_ASD_VERSION_INFO[2]}
+	deleteFile ${TRAN_ASD_RESULT_INFO[2]}
+	asd_version_pid=$(grabOneInfo "${TRAN_ASD_VERSION_INFO[@]}")
+	asd_result_pid=$(grabOneInfo "${TRAN_ASD_RESULT_INFO[@]}")
+	
+	#tran fb
+	deleteFile ${TRAN_FB_VERSION_INFO[2]}
+	deleteFile ${TRAN_FB_LEVELS_INFO[2]}
+	deleteFile ${TRAN_FB_INDEX_INFO[2]}
+	deleteFile ${TRAN_FB_PREV_PERF_INFO[2]}
+	tran_fb_version_pid=$(grabOneInfo "${TRAN_FB_VERSION_INFO[@]}")
+	tran_fb_levels_pid=$(grabOneInfo "${TRAN_FB_LEVELS_INFO[@]}")
+	tran_fb_index_pid=$(grabOneInfo "${TRAN_FB_INDEX_INFO[@]}")
+	tran_fb_perf_pid=$(grabOneInfoWithTime "${TRAN_FB_PREV_PERF_INFO[@]}")
+	
+	#st portrait
+	deleteFile ${ST_PORTRAIT_PREV_VERSION_INFO[2]}
+	st_portrait_prev_version_pid=$(grabOneInfo "${ST_PORTRAIT_PREV_VERSION_INFO[@]}")
 }
 
-tranAsdCheck() {
+#==============================================================================
+# 停止预览场景所有算法和功能的关键信息抓取
+#==============================================================================
+previewStopGrabInfos() {
+	kill $aiscene_version_pid
+	kill $aiscene_result_pid
+	kill $asd_version_pid
+	kill $asd_result_pid
+	kill $tran_fb_version_pid
+	kill $tran_fb_levels_pid
+	kill $tran_fb_index_pid
+	kill $tran_fb_perf_pid
+	kill $st_portrait_prev_version_pid
+}
+
+#==============================================================================
+# 分析预览场景所有算法和功能的关键信息,并整理输出
+#==============================================================================
+previewInfosAnalysis() {
+	if [ ${asd_brand,,} == "sprd" ]; then
+		#sprd aiscene
+		local aiscene_version=$(sed -n "2p" ${SPRD_AISCENE_VERSION_INFO[2]} | awk -F '[' '{print $3}' | awk -F ']' '{print $1}')
+		if [[ ${aiscene_version} != "" ]]; then
+			printResult "[AIScene版本为: $aiscene_version]"
+		fi
+		local aiscene_result=$(sed -n "2p" ${SPRD_AISCENE_RESULT_INFO[2]} | awk -F ':' '{print $4}')
+		if [[ ${aiscene_result} != "" ]]; then
+			printResult "[AIScene识别到: ${AISCENE_RESULT_ENUM[aiscene_result]}]"
+		fi
+	elif [ ${asd_brand,,} == "tran" ]; then
+		#tran asd
+		local asd_version=$(sed -n "2p" ${TRAN_ASD_VERSION_INFO[2]} | awk -F ':' '{print $3}')
+		if [[ ${asd_version} != "" ]]; then
+			printResult "[ASD版本为: $asd_version]"
+		fi
+		local illumination_type=$(sed -n "2p" ${TRAN_ASD_RESULT_INFO[2]} | awk -F ':' '{print $3}' | awk -F ',' '{print $1}' | awk -F '=' '{print $2}')
+		local scene_type=$(sed -n "2p" ${TRAN_ASD_RESULT_INFO[2]} | awk -F ':' '{print $3}' | awk -F ',' '{print $2}' | awk -F '=' '{print $2}')
+		if [[ ${illumination_type} != "" ]]; then
+			printResult "[ASD识别到: 明亮度：$illumination_type]"
+		fi
+		if [[ ${scene_type} != "" ]]; then
+			printResult "[           场  景：$scene_type]"
+		fi
+	else
+		printErrorConfigMsgAndExit "普通拍照" "asd_brand" "sprd" "tran"
+	fi
+	
+	#tran fb 
+	local fb_version=$(sed -n "2p" ${TRAN_FB_VERSION_INFO[2]} | awk -F ':' '{print $3}')
+	if [[ ${fb_version} != "" ]]; then
+		printResult "[FaceBeauty当前的版本为: $fb_version]"
+	fi
+	local fb_currLev=$(sed -n "2p" ${TRAN_FB_INDEX_INFO[2]} | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
+	if [[ ${fb_currLev} != "" ]]; then
+		printResult "[FaceBeauty当前的等级为: $fb_currLev]"
+	fi
+	local levelList=$(sed -n "2p" ${TRAN_FB_LEVELS_INFO[2]} | awk -F ':' '{print $3}')
+	if [[ ${levelList} != "" ]]; then
+		printResult "[配置文件中配置的该项目FaceBeauty支持的最高等级为: $fb_level]"
+		printResult "[FaceBeauty实际支持的等级有: $levelList]"
+	fi
+	if [ `tail -n 1 ${TRAN_FB_PREV_PERF_INFO[2]} | grep -c "X ret=0"` -eq 0 ]; then
+		local startTime=$(tail -n 3 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
+		local endTime=$(tail -n 2 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
+	else
+		local startTime=$(tail -n 2 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
+		local endTime=$(tail -n 1 ${TRAN_FB_PREV_PERF_INFO[2]} | awk '{print $1 " " $2}')
+	fi
+	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[美颜预览处理耗时为: $time ms]"
+	fi
+	
+	#st portrait
+	local st_version=$(sed -n "2p" ${ST_PORTRAIT_PREV_VERSION_INFO[2]} | awk -F '=' '{print $2}')
+	if [[ ${st_version} != "" ]]; then
+		printResult "[预览虚化版本为: $st_version]"
+	fi
+}
+
+#==============================================================================
+# 开始拍照场景所有算法和功能的关键信息抓取
+#==============================================================================
+captureStartGrabInfos() {
+	printInteractTip "生成的中间文件即将被覆盖，如需查看请先查看，按回车确认覆盖"
+	read CMD
+	printDivideLine
 	adb logcat -c
-	adb logcat -v brief -b main TranCam-ASD:I *:S --regex "Version" > logcat_ai_asd.txt &
-	local pid=$!
-	echo "   * 请进入或返回键退出后重新进入相机 *"
-	while ! [ -s logcat_ai_asd.txt ]
+	#sprd hdr
+	deleteFile ${SPRD_HDR_VERSION_INFO[2]}
+	deleteFile ${SPRD_HDR_CAP_TIME_INFO[2]}
+	sprd_hdr_version_pid=$(grabOneInfo "${SPRD_HDR_VERSION_INFO[@]}")
+	sprd_hdr_cap_time_pid=$(grabOneInfo "${SPRD_HDR_CAP_TIME_INFO[@]}")
+	
+	#sprd mfnr
+	deleteFile ${SPRD_MFNR_VERSION_INFO[2]}
+	deleteFile ${SPRD_MFNR_CAP_BEGIN_INFO[2]}
+	deleteFile ${SPRD_MFNR_CAP_END_INFO[2]}
+	sprd_mfnr_version_pid=$(grabOneInfo "${SPRD_MFNR_VERSION_INFO[@]}")
+	sprd_mfnr_version_begin_pid=$(grabOneInfoWithTime "${SPRD_MFNR_CAP_BEGIN_INFO[@]}")
+	sprd_mfnr_version_end_pid=$(grabOneInfoWithTime "${SPRD_MFNR_CAP_END_INFO[@]}")
+	
+	#tran fb
+	deleteFile ${TRAN_FB_CAP_BEGIN_INFO[2]}
+	deleteFile ${TRAN_FB_CAP_END_INFO[2]}
+	tran_fb_cap_begin_pid=$(grabOneInfoWithTime "${TRAN_FB_CAP_BEGIN_INFO[@]}")
+	tran_fb_cap_end_pid=$(grabOneInfoWithTime "${TRAN_FB_CAP_END_INFO[@]}")
+	
+	#st portrait
+	deleteFile ${ST_PORTRAIT_CAP_VERSION_INFO[2]}
+	deleteFile ${ST_PORTRAIT_CAP_BEGIN_INFO[2]}
+	deleteFile ${ST_PORTRAIT_CAP_END_INFO[2]}
+	st_portrait_cap_version_pid=$(grabOneInfo "${ST_PORTRAIT_CAP_VERSION_INFO[@]}")
+	st_portrait_cap_begin_pid=$(grabOneInfoWithTime "${ST_PORTRAIT_CAP_BEGIN_INFO[@]}")
+	st_portrait_cap_end_pid=$(grabOneInfoWithTime "${ST_PORTRAIT_CAP_END_INFO[@]}")
+	
+	#arc filter
+	deleteFile ${ARC_FILTER_CAP_BEGIN_INFO[2]}
+	deleteFile ${ARC_FILTER_CAP_END_INFO[2]}
+	arc_filter_cap_begin_pid=$(grabOneInfoWithTime "${ARC_FILTER_CAP_BEGIN_INFO[@]}")
+	arc_filter_cap_end_pid=$(grabOneInfoWithTime "${ARC_FILTER_CAP_END_INFO[@]}")
+	
+	#tran_photo_wm
+	deleteFile ${TRAN_PHOTO_WM_BEGIN_TIME[2]}
+	deleteFile ${TRAN_PHOTO_WM_END_TIME[2]}
+	tran_photoWM_cap_begin_pid=$(grabOneInfoWithTime "${TRAN_PHOTO_WM_BEGIN_TIME[@]}")
+	tran_photoWM_cap_end_pid=$(grabOneInfoWithTime "${TRAN_PHOTO_WM_END_TIME[@]}")
+}
+
+#==============================================================================
+# 停止拍照场景所有算法和功能的关键信息抓取
+#==============================================================================
+captureStopGrabInfos() {
+	kill $sprd_hdr_version_pid
+	kill $sprd_hdr_cap_time_pid
+	kill $sprd_mfnr_version_pid
+	kill $sprd_mfnr_version_begin_pid
+	kill $sprd_mfnr_version_end_pid
+	kill $tran_fb_cap_begin_pid
+	kill $tran_fb_cap_end_pid
+	kill $st_portrait_cap_version_pid
+	kill $st_portrait_cap_begin_pid
+	kill $st_portrait_cap_end_pid
+	kill $arc_filter_cap_begin_pid
+	kill $arc_filter_cap_end_pid
+	kill $tran_photoWM_cap_begin_pid
+	kill $tran_photoWM_cap_end_pid
+}
+
+#==============================================================================
+# 分析拍照场景所有算法和功能的关键信息,并整理输出
+#==============================================================================
+captureInfosAnalysis() {
+	#sprd hdr
+	local version=$(sed -n "2p" ${SPRD_HDR_VERSION_INFO[2]} | awk -F '[' '{print $3}' | awk -F ' ' '{print $2}' | awk -F ']' '{print $1}')
+	if [[ ${version} != "" ]]; then
+		printResult "[HDR版本为: $version]"
+	fi
+	local time=$(sed -n "2p" ${SPRD_HDR_CAP_TIME_INFO[2]} | awk -F ':' '{print $3}')
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[HDR拍照耗时为:$time]"
+	fi
+	
+	#sprd mfnr
+	version=$(sed -n "2p" ${SPRD_MFNR_VERSION_INFO[2]} | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
+	if [[ ${version} != "" ]]; then
+		printResult "[MFNR版本为:$version]"
+	fi
+	startTime=$(tail -n 1 ${SPRD_MFNR_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+	endTime=$(tail -n 1 ${SPRD_MFNR_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[MFNR拍照耗时为: $time ms]"
+	fi
+	
+	#tran fb
+	startTime=$(tail -n 1 ${TRAN_FB_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+	endTime=$(tail -n 1 ${TRAN_FB_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[美颜拍照耗时为: $time ms]"
+	fi
+	
+	#st portrait
+	version=$(sed -n "2 {/version/p}" ${ST_PORTRAIT_CAP_VERSION_INFO[2]} | awk -F '=' '{print $2}')
+	if [[ ${version} != "" ]]; then
+		printResult "[虚化拍照版本为:$version]"
+	fi
+	startTime=$(tail -n 1 ${ST_PORTRAIT_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+	endTime=$(tail -n 1 ${ST_PORTRAIT_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[虚化拍照耗时为: $time ms]"
+	fi
+	
+	#arc filter
+	startTime=$(tail -n 1 ${ARC_FILTER_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+	endTime=$(tail -n 1 ${ARC_FILTER_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[滤镜拍照耗时为: $time ms]"
+	fi
+	
+	#tran_photo_wm
+	startTime=$(tail -n 1 ${TRAN_PHOTO_WM_BEGIN_TIME[2]} | awk '{print $1 " " $2}')
+	endTime=$(tail -n 1 ${TRAN_PHOTO_WM_END_TIME[2]} | awk '{print $1 " " $2}')
+	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+	if [[ ${time} != "" && ${time} != 0 ]]; then
+		printResult "[水印拍照耗时为: $time ms]"
+	fi
+}
+
+#==============================================================================
+# 等待关键文件生成
+#==============================================================================
+waitUntilDone() {
+	while ! [ -s $1 ]
 	do
 		continue
 	done
-	kill $pid
-	local version=$(sed -n "2 {/Version/p}" logcat_ai_asd.txt | awk -F ':' '{print $3}')
-	echo -e "   [ASD版本为：$version]\n"
-	rm logcat_ai_asd.txt
-	sleep 1
+}
+
+#==============================================================================
+# 展锐平台场景识别算法功能检查
+#==============================================================================
+sprdAISceneCheck() {
+	previewStartGrabInfos
+	printNormalTip "请进入或返回键退出后重新进入相机"
+	waitUntilDone ${SPRD_AISCENE_VERSION_INFO[2]}
+	previewStopGrabInfos
+	previewInfosAnalysis
+	
+	printNormalTip  "请确保AI功能开启"
 	while true
 	do
-		adb logcat -c
-		adb logcat -v brief -b main TranCam-ASD:D *:S --regex "ASD to APP result" > logcat_ai_asd.txt &
-		pid=$!
-		read -p "   * 请将手机对准需要识别的场景后按下回车 *"
-		while ! [ -s logcat_ai_asd.txt ]
-		do
-			continue
-		done
-		kill $pid
-		local illumination_type=$(sed -n "2p" logcat_ai_asd.txt | awk -F ':' '{print $3}' | awk -F ',' '{print $1}' | awk -F '=' '{print $2}')
-		local scene_type=$(sed -n "2p" logcat_ai_asd.txt | awk -F ':' '{print $3}' | awk -F ',' '{print $2}' | awk -F '=' '{print $2}')
-		echo "   ASD识别结果："
-		echo "   [明亮度：$illumination_type]"
-		echo -e "   [场景：$scene_type]\n"
-		rm logcat_ai_asd.txt
+		previewStartGrabInfos
+		printNormalTip "场景检测中,请保持手机对准需要识别的场景"
+		waitUntilDone ${SPRD_AISCENE_RESULT_INFO[2]}
+		previewStopGrabInfos
+		previewInfosAnalysis
 		while true
 		do
-			echo -n "   是否继续识别？（Y,y/N,n）（直接回车默认Y,y）"
+			printInteractTip "是否继续识别？[Y/N][直接回车默认Y] "
 			read detect
-			if [ -z $detect ] || [ ${detect,,} == "y" ] || [ ${detect,,} == "n" ]
-			then
+			printDivideLine
+			if [ -z $detect ] || [ ${detect,,} == "y" ] || [ ${detect,,} == "n" ]; then
 				break
 			else
-				echo "   请输入 'Y/y' or 'N/n'"
+				printNormalTip "请输入[Y/N]"
 			fi
 		done
-		if [ -z $detect ] || [ ${detect,,} == "y" ]
-		then
+		if [ -z $detect ] || [ ${detect,,} == "y" ]; then
 			continue
 		else
-			echo ""
+			printNormalTip "退出场景识别功能检查"
 			break
 		fi
 	done
 }
 
-AICamAsdCheck() {
-	echo " • AI_ASD"
-	sleep 1
-	if [ ${asd_brand,,} == "sprd" ]
-	then
+#==============================================================================
+# 传音自研场景识别算法功能检查
+#==============================================================================
+tranAsdCheck() {
+	previewStartGrabInfos
+	printNormalTip "请进入或返回键退出后重新进入相机"
+	waitUntilDone ${TRAN_ASD_VERSION_INFO[2]}
+	previewStopGrabInfos
+	previewInfosAnalysis
+
+	printNormalTip  "请确保AI功能开启"
+	while true
+	do
+		previewStartGrabInfos
+		printNormalTip "场景检测中,请保持手机对准需要识别的场景"
+		waitUntilDone ${TRAN_ASD_RESULT_INFO[2]}
+		previewStopGrabInfos
+		previewInfosAnalysis
+		while true
+		do
+			printInteractTip "是否继续识别？[Y/N][直接回车默认Y] "
+			read detect
+			printDivideLine
+			if [ -z $detect ] || [ ${detect,,} == "y" ] || [ ${detect,,} == "n" ]; then
+				break
+			else
+				printNormalTip "请输入[Y/N]"
+			fi
+		done
+		if [ -z $detect ] || [ ${detect,,} == "y" ]; then
+			continue
+		else
+			printNormalTip "退出场景识别功能检查"
+			break
+		fi
+	done
+}
+
+#==============================================================================
+# 普通拍照模式下的场景识别算法的检查
+#==============================================================================
+sceneDetectCheck() {
+	if [ ${asd_brand,,} == "sprd" ]; then
+		printAlgoName "SPRD AiScene"
 		sprdAISceneCheck
-	elif [ ${asd_brand,,} == "tran" ]
-	then
+	elif [ ${asd_brand,,} == "tran" ]; then
+		printAlgoName "TRAN ASD"
 		tranAsdCheck
 	else
-		echo "   请检查配置文件中所选项目的ASD_ALGO值，目前只支持sprd或tran，可不区分大小写"
-		echo "   [AI CAM模式下的ASD未成功检测，请稍后重试]"
+		printErrorConfigMsgAndExit "普通拍照" "asd_brand" "sprd" "tran"
 	fi
 }
 
-sprdHdrCheck() {
-	adb logcat -c
-	if [ ${android_version^^} == "T" ]
-	then
-		adb logcat -v brief -b main HDRNode:D *:S --regex "HDR lib version" > logcat_ai_hdr_version.txt &
-		local pid1=$!
-		adb logcat -v time -b main HDRNode:D *:S --regex "tuning param size" > logcat_ai_hdr_begin_time.txt &
-		local pid2=$!
-		adb logcat -v time -b main HDRNode:D *:S --regex "--LWP D-- X, ret =" > logcat_ai_hdr_end_time.txt &
-		local pid3=$!
-	elif [ ${android_version^^} == "S" ]
-	then
-		adb logcat -v brief -b main sprdhdr2:I *:S --regex "CAM_ALGO_CV_HDR2_LIBVER" > logcat_ai_hdr_version.txt &
-		local pid1=$!
-		adb logcat -v brief -b main sprdhdr2:I *:S --regex "CAM_ALGO_CV_HDR2_LIBVER" > logcat_ai_hdr_begin_time.txt &
-		local pid2=$!
-		adb logcat -v brief -b main sprdhdr2:I *:S --regex "CAM_ALGO_CV_HDR2_LIBVER" > logcat_ai_hdr_end_time.txt &
-		local pid3=$!
-	else
-		echo "   请检查配置文件中所选项目的ANDROID_VERSION值，目前只支持T或S，可不区分大小写"
-		echo "   [HDR未成功检测，请稍后重试]"
-		return
-	fi
-	sleep 1
-	echo "   * $1 *"
-	echo "   * 在识别到HDR的场景下拍摄一张照片 *"
-	while ! [ -s logcat_ai_hdr_version.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	while ! [ -s logcat_ai_hdr_begin_time.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	while ! [ -s logcat_ai_hdr_end_time.txt ]
-	do
-		continue
-	done
-	kill $pid3
-	if [ ${android_version^^} == "T" ]
-	then
-		local version=$(sed -n "/HDR lib version/p" logcat_ai_hdr_version.txt | awk -F ':' '{print $4}' | awk -F ',' '{print $1}')
-		echo "   [HDR版本为：$version]"
-		echo "   HDR拍照时间："
-		echo -n "   "
-		sed -n "2p" logcat_ai_hdr_begin_time.txt
-		echo -n "   "
-		sed -n "2p" logcat_ai_hdr_end_time.txt
-		local startTime=$(sed -n "2p" logcat_ai_hdr_begin_time.txt | awk '{print $1 " " $2}')
-		local endTime=$(sed -n "2p" logcat_ai_hdr_end_time.txt | awk '{print $1 " " $2}')
-		local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-		echo "   时间差：$time ms"
-	elif [ ${android_version^^} == "S" ]
-	then
-		local version=$(sed -n "/CAM_ALGO_CV_HDR2_LIBVER/p" logcat_ai_hdr_version.txt | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
-		echo "   [HDR版本为：$version]"
-		#TODO（执行时间）
-	else
-		echo "   请检查配置文件中所选项目的ANDROID_VERSION值，目前只支持T或S，可不区分大小写"
-		echo "   [HDR未成功检测，请稍后重试]"
-		return
-	fi
-	echo ""
-	rm logcat_ai_hdr_version.txt
-	rm logcat_ai_hdr_begin_time.txt
-	rm logcat_ai_hdr_end_time.txt
-	sleep 1
+#==============================================================================
+# 展锐平台HDR的场景拍照算法的检查
+#==============================================================================
+sprdHDRCheck() {
+	captureStartGrabInfos
+	printNormalTip "$1"
+	printNormalTip "在识别到HDR的场景下拍摄一张照片"
+	waitUntilDone ${SPRD_HDR_VERSION_INFO[2]}
+	waitUntilDone ${SPRD_HDR_CAP_TIME_INFO[2]}
+	captureStopGrabInfos
+	captureInfosAnalysis
 }
 
-AICamHdrCheck() {
-	echo " • AI_HDR"
-	if [ ${hdr_brand,,} == "sprd" ]
-	then
-		if [ ${brand,,} == "itel" ]
-		then
-			sprdHdrCheck "请确保开启快速功能栏中的AI开关"
-		elif [ ${brand,,} == "tecno" ] || [ ${brand,,} == "infinix" ]
-		then
-			sprdHdrCheck "请确保开启快速功能栏中的HDR开关"
+#==============================================================================
+# 三方虹软HDR的场景拍照算法的检查
+#==============================================================================
+arcHDRCheck() {
+	echo "$1"
+}
+
+#==============================================================================
+# HDR算法检查
+#==============================================================================
+hdrCheck() {
+	printAlgoName "HDR"
+	local tip=""
+	if [ $1 == "photo" ]; then
+		if [ ${brand,,} == "itel" ]; then
+			tip="请确保开启快速功能栏中的AI开关"
+		elif [ ${brand,,} == "tecno" ] || [ ${brand,,} == "infinix" ]; then
+			tip="请确保开启快速功能栏中的HDR开关"
 		fi
+	fi
+	
+	if [ ${hdr_brand,,} == "sprd" ]; then
+		sprdHDRCheck $tip
+	elif [ ${hdr_brand,,} == "arc" ]; then
+		arcHDRCheck $tip
 	else
-		echo "   请检查配置文件中所选项目的HDR_ALGO值，目前只支持sprd，可不区分大小写"
-		echo "   [HDR未成功检测，请稍后重试]"
+		printErrorConfigMsgAndExit "HDR" "HDR_ALGO" "sprd" "arc"
 	fi
 }
 
+#==============================================================================
+# 普通拍照模式下的HDR算法的检查
+#==============================================================================
+photoHDRcheck() {
+	if [ ${photo_hdr,,} == "yes" ]; then
+		hdrCheck "photo"
+	elif [ ${photo_hdr,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "拍照模式HDR" "PHOTO_HDR" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# MFNR算法检查
+#==============================================================================
 mfnrCheck() {
-	adb logcat -c
-	adb logcat -v brief -b main TDNS_LOG:D *:S --regex "CAM_ALGO_CV_MFNR_LIBVER" > logcat_mfnr.txt &
-	local pid1=$!
-	if [ ${android_version^^} == "T" ]
-	then
-		adb logcat -v time -b main MFNRNode:D *:S --regex "cap_MFNR" > logcat_mfnr_begin_time.txt &
-		local pid2=$!
-		adb logcat -v time -b main MFNRNode *:S --regex "X, ret = 0" > logcat_mfnr_end_time.txt &
-		local pid3=$!
-	elif [ ${android_version^^} == "S" ]
-	then
-		adb logcat -v time -b main ips_core:I *:S --regex "ipm_mfnr" > logcat_mfnr_begin_time.txt &
-		local pid2=$!
-		adb logcat -v time -b main ips_core *:S --regex "mfnr done" > logcat_mfnr_end_time.txt &
-		local pid3=$!
-	else
-		echo "   请检查配置文件中所选项目的ANDROID_VERSION值，目前只支持T或S，可不区分大小写"
-		echo "   [MFNR未成功检测，请稍后重试]"
-		return
-	fi
-	sleep 1
-	echo "   * 请关闭闪光灯，并使用后摄在暗环境下拍摄一张照片 *"
-	while ! [ -s logcat_mfnr.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	local version=$(sed -n "/CAM_ALGO_CV_MFNR_LIBVER/p" logcat_mfnr.txt | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
-	echo "   [MFNR版本为：$version]"
-	rm logcat_mfnr.txt
-	while ! [ -s logcat_mfnr_begin_time.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	local line
-	while true
-	do
-		line=$(wc -l < logcat_mfnr_end_time.txt)
-		if [[ $line > 5 ]]
-		then
-			break
-		else
-			continue
-		fi
-	done
-	kill $pid3
-	echo "   MFNR拍照时间："
-	echo -n "   "
-	sed -n "2p" logcat_mfnr_begin_time.txt
-	echo -n "   "
-	sed -n "6p" logcat_mfnr_end_time.txt
-	local startTime=$(sed -n "2p" logcat_mfnr_begin_time.txt | awk '{print $1 " " $2}')
-	local endTime=$(sed -n "6p" logcat_mfnr_end_time.txt | awk '{print $1 " " $2}')
-	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	echo -e "   时间差：$time ms\n"
-	rm logcat_mfnr_begin_time.txt
-	rm logcat_mfnr_end_time.txt
-	sleep 1
+	printAlgoName "MFNR"
+	captureStartGrabInfos
+	printNormalTip "请关闭闪光灯，并在暗环境下拍摄一张照片"
+	waitUntilDone ${SPRD_MFNR_VERSION_INFO[2]}
+	waitUntilDone ${SPRD_MFNR_CAP_BEGIN_INFO[2]}
+	waitUntilDone ${SPRD_MFNR_CAP_END_INFO[2]}
+	captureStopGrabInfos
+	captureInfosAnalysis
 }
 
-AICamMfnrCheck() {
-	echo " • AI_MFNR"
-	mfnrCheck
+#==============================================================================
+# 普通拍照模式下的暗光多帧降噪拍照算法的检查
+#==============================================================================
+photoLowLight() {
+	if [ ${photo_lowlight,,} == "mfnr" ]; then
+		mfnrCheck
+	fi
 }
 
-getFbTime() {
-	read -p "   * 请将摄像头对准人脸后回车 *"
-	if [ ${fb_brand,,} ==  "tran" ]
-	then
-		local TAG="TranCam-FaceBeauty"
-	elif [ ${fb_brand,,} == "arc" ]
-	then
-		local TAG="TranCam-ArcFaceBeauty"
-	else
-		echo "   请检查配置文件中所选项目的FB_ALGO值，目前只支持tran或arc，可不区分大小写"
-		echo "   [FaceBeauty时间未成功检测，请稍后重试]"
-		return
-	fi
-	adb logcat -c
-	adb logcat -v time -b main $TAG:D *:S --regex "\[processPreview\]E|\[processPreview\]X ret=0" > logcat_fb_prev_time.txt &
-	local pid1=$!
-	while ! [ -s logcat_fb_prev_time.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	echo "   预览美颜时间："
-	if [ `tail -n 1 logcat_fb_prev_time.txt | grep -c "X ret=0"` -eq 0 ]
-	then
-		echo -n "   "
-		tail -n 3 logcat_fb_prev_time.txt | head -n 1
-		echo -n "   "
-		tail -n 2 logcat_fb_prev_time.txt | head -n 1
-		local startTime=$(tail -n 3 logcat_fb_prev_time.txt | head -n 1 | awk '{print $1 " " $2}')
-		local endTime=$(tail -n 2 logcat_fb_prev_time.txt | head -n 1 | awk '{print $1 " " $2}')
-	else
-		echo -n "   "
-		tail -n 2 logcat_fb_prev_time.txt | head -n 1
-		echo -n "   "
-		tail -n 1 logcat_fb_prev_time.txt
-		local startTime=$(tail -n 2 logcat_fb_prev_time.txt | head -n 1 | awk '{print $1 " " $2}')
-		local endTime=$(tail -n 1 logcat_fb_prev_time.txt | awk '{print $1 " " $2}')
-	fi
-	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	echo "   时间差：$time ms"
-	rm logcat_fb_prev_time.txt
-	echo ""
-	adb logcat -c
-	adb logcat -v time -b main $TAG:D *:S --regex "\[processRaw\]E" > logcat_fb_cap_begin_time.txt &
-	local pid2=$!
-	adb logcat -v time -b main $TAG:D *:S --regex "\[processRaw\]X ret=0" > logcat_fb_cap_end_time.txt &
-	local pid3=$!
-	echo "   * 请在识别到人脸后进行拍照 *"
-	while ! [ -s logcat_fb_cap_begin_time.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	while ! [ -s logcat_fb_cap_end_time.txt ]
-	do
-		continue
-	done
-	kill $pid3
-	echo "   拍照美颜时间："
-	echo -n "   "
-	sed -n "2p" logcat_fb_cap_begin_time.txt
-	echo -n "   "
-	sed -n "2p" logcat_fb_cap_end_time.txt
-	startTime=$(sed -n "2p" logcat_fb_cap_begin_time.txt | awk '{print $1 " " $2}')
-	endTime=$(sed -n "2p" logcat_fb_cap_end_time.txt | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	echo "   时间差：$time ms"
-	rm logcat_fb_cap_begin_time.txt
-	rm logcat_fb_cap_end_time.txt
-	echo ""
-	sleep 1
+#==============================================================================
+# 获取并计算美颜算法执行时间
+#==============================================================================
+getTranFbTime() {
+	printInteractTip "请将摄像头对准人脸后,再按回车键"
+	read CMD
+	printDivideLine
+	
+	previewStartGrabInfos
+	waitUntilDone ${TRAN_FB_PREV_PERF_INFO[2]}
+	previewStopGrabInfos
+	previewInfosAnalysis
+	
+	captureStartGrabInfos
+	printNormalTip "请将摄像头对准人脸后,点击拍照按钮"
+	waitUntilDone ${TRAN_FB_CAP_BEGIN_INFO[2]}
+	waitUntilDone ${TRAN_FB_CAP_END_INFO[2]}
+	captureStopGrabInfos
+	captureInfosAnalysis
 }
 
+#==============================================================================
+# 美颜算法检查
+#==============================================================================
 tranFbCheck() {
-	adb logcat -c
-	adb logcat -v brief -b main TranCam-FaceBeauty:I *:S --regex "tran FB version" > logcat_fb_version.txt &
-	local pid1=$!
-	adb logcat -c
-	adb logcat -v brief -b main CamAp_ItelFaceBeautySet:I *:S --regex "supportList" > logcat_fb_level_list.txt &
-	local pid2=$!
-	adb logcat -c
-	adb logcat -v brief -b main CamAp_ItelFaceBeautySet:I *:S --regex "mCurrentEntryValue" > logcat_fb_current_level.txt &
-	local pid3=$!
-	echo "   * $1 *"
-	while ! [ -s logcat_fb_current_level.txt ]
-	do
-		continue
-	done
-	kill $pid3
-	local currLev=$(sed -n "/mCurrentEntryValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
-	echo "   [FB当前的等级为:$currLev]"
-	rm logcat_fb_current_level.txt
-	if [ $currLev == 0 ]
-	then
-		echo "   * 当前美颜为关闭状态，请开启美颜 *"
-	fi
-	while ! [ -s logcat_fb_version.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	local version=$(sed -n "/tran FB version/p" logcat_fb_version.txt | awk -F ':' '{print $3}')
-	echo "   [FB版本为：$version]"
-	rm logcat_fb_version.txt
-	while ! [ -s logcat_fb_level_list.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	local levelList=$(sed -n "/supportList/p" logcat_fb_level_list.txt | awk -F ':' '{print $3}')
-	echo "   [配置文件中配置的该项目FB支持的最高等级为：$fb_level]"
-	echo -e "   [FB实际支持的等级有：$levelList]\n"
-	rm logcat_fb_level_list.txt
-	getFbTime
+	previewStartGrabInfos
+	printNormalTip "$1"
+	waitUntilDone ${TRAN_FB_VERSION_INFO[2]}
+	waitUntilDone ${TRAN_FB_LEVELS_INFO[2]}
+	waitUntilDone ${TRAN_FB_INDEX_INFO[2]}
+	previewStopGrabInfos
+	previewInfosAnalysis
+	
+	getTranFbTime
 	while true
 	do
-		echo -n "   是否继续检测美颜？（Y,y/N,n）（直接回车默认Y,y）"
+		printInteractTip "是否继续检测美颜？[Y/N][直接回车默认Y] "
 		read detect
-		if [ -z $detect ] || [ ${detect,,} == "y" ]
-		then
+		printDivideLine
+		if [ -z $detect ] || [ ${detect,,} == "y" ]; then
 			adb logcat -c
-			adb logcat -v brief -b main CamAp_ItelFaceBeautySet:D *:S --regex "set Degree To Devices|\[updateEntryView\] mCurrentEntryValue" > logcat_fb_current_level.txt &
-			local pid=$!
-			echo "   * 请切换美颜等级 *"
-			while ! [ -s logcat_fb_current_level.txt ]
-			do
-				continue
-			done
+			local pid=$(grabOneInfoWithTime "${TRAN_FB_CUR_INDEX_INFO[@]}")
+			printNormalTip "请切换美颜等级"
+			waitUntilDone ${TRAN_FB_CUR_INDEX_INFO[2]}
 			kill $pid
-			currLev=$(sed -n "/set Degree To Devices/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}')
-			if [ ! $currLev ]
-			then
-				currLev=$(sed -n "2 {/mCurrentEntryValue/p}" logcat_fb_current_level.txt | awk -F '=' '{print $2}')
+			currLev=$(sed -n "/set Degree To Devices/p" ${TRAN_FB_CUR_INDEX_INFO[2]} | awk -F '=' '{print $2}')
+			if [ ! $currLev ]; then
+				currLev=$(sed -n "2 {/mCurrentEntryValue/p}" ${TRAN_FB_CUR_INDEX_INFO[2]} | awk -F '=' '{print $2}')
 			fi
-			echo -e "   [FB当前的等级为:$currLev]\n"
-			rm logcat_fb_current_level.txt
-			if [ $currLev == 0 ]
-			then
-				read -p "   * 当前美颜为关闭状态，请开启美颜后按下回车 *"
+			printResult "[美颜当前的等级为:$currLev]"
+			deleteFile ${TRAN_FB_CUR_INDEX_INFO[2]}
+			if [ $currLev == 0 ]; then
+				printInteractTip "当前美颜为关闭状态，请开启美颜后按下回车"
+				read CMD
+				printDivideLine
+				continue
 			fi
-			getFbTime
-		elif [ ${detect,,} == "n" ]
-		then
-			echo ""
+			getTranFbTime
+		elif [ ${detect,,} == "n" ]; then
 			break
 		else
-			echo "   请输入 'Y/y' or 'N/n'"
+			printNormalTip "请输入[Y/N]"
 		fi
 	done
 }
 
-arcFbCheck() {
-	adb logcat -c
-	adb logcat -v brief -b main TranCam-ArcFaceBeauty:I *:S --regex "version" > logcat_fb_version.txt &
-	local pid1=$!
-	adb logcat -c
-	adb logcat -v brief -b main CamAp_FaceBeautyRoot:I *:S --regex "mCurrValue" > logcat_fb_current_level.txt &
-	local pid2=$!
-	echo "   * $1 *"
-	while ! [ -s logcat_fb_current_level.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	local currLev=$(sed -n "/mCurrValue/p" logcat_fb_current_level.txt | awk -F '=' '{print $2}')
-	echo "   [FB当前的等级为:$currLev]"
-	rm logcat_fb_current_level.txt
-	if [ $currLev == 0 ]
-	then
-		read -p "   * 当前美颜为关闭状态，请开启美颜 *"
-	fi
-	while ! [ -s logcat_fb_version.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	local version=$(sed -n "2 {/version/p}" logcat_fb_version.txt | awk -F ':' '{print $3}' | awk '{print $1}')
-	echo "   [FB版本为：$version]"
-	rm logcat_fb_version.txt
-	#TODO（支持的等级列表）
-	getFbTime
-	sleep 1
-	while true
-	do
-		echo -n "   是否继续检测美颜？（Y,y/N,n）（直接回车默认Y,y）"
-		read detect
-		if [ -z $detect ] || [ ${detect,,} == "y" ]
-		then
-			adb logcat -c
-			adb logcat -v brief -b main CamAp_FaceBeautyParamet:D *:S --regex "configParameters" > logcat_fb_current_level.txt &
-			local pid=$!
-			echo "   * 请切换美颜等级 *"
-			while ! [ -s logcat_fb_current_level.txt ]
-			do
-				continue
-			done
-			kill $pid
-			currLev=$(sed -n "2p" logcat_fb_current_level.txt | awk -F ',' '{print $2}' | awk -F ':' '{print $2}')
-			echo -e "   [FB当前的等级为:$currLev]\n"
-			rm logcat_fb_current_level.txt
-			if [ $currLev == 0 ]
-			then
-				read -p "   * 当前美颜为关闭状态，请开启美颜后按下回车 *"
-			fi
-			getFbTime
-		elif [ ${detect,,} == "n" ]
-		then
-			echo ""
-			break
+#==============================================================================
+# 普通拍照模式下的美颜拍照算法功能检查
+#==============================================================================
+photoFaceBeauty() {
+	if [ ${photo_fb,,} == "yes" ]; then
+		printAlgoName "FaceBeauty"
+		if [ ${fb_brand,,} == "tran" ]; then
+			tranFbCheck "请打开美颜开关,并重新进入相机"
 		else
-			echo "   请输入 'Y/y' or 'N/n'"
+			printErrorConfigMsgAndExit "美颜拍照" "FB_ALGO" "tran" "NULL"
 		fi
-	done
-}
-
-AICamFbCheck() {
-	echo " • AI_FaceBeauty"
-	if [ ${fb_brand,,} == "tran" ]
-	then
-		tranFbCheck "请重新进入相机"
-	elif [ ${fb_brand,,} == "arc" ]
-	then
-		arcFbCheck "请重新进入相机"
+	elif [ ${photo_fb,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
 	else
-		echo "   请检查配置文件中所选项目的FB_ALGO值，目前只支持tran或arc，可不区分大小写"
-		echo "   [AI CAM模式下的FaceBeauty未成功检测，请稍后重试]"
+		printErrorConfigMsgAndExit "美颜拍照" "PHOTO_FB" "yes" "no"
 	fi
 }
 
-AICamCheck() {
-	echo "◆ AI CAM"
-	sleep 1
-	if [ ${photo_asd,,} == "yes" ]
-	then
-		AICamAsdCheck
-	elif [ ${photo_asd,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的PHOTO_ASD值，只能为yes或no，可不区分大小写"
-		echo "   [AI CAM模式下的ASD未成功检测，请稍后重试]"
-	fi
-	if [ ${photo_hdr,,} == "yes" ]
-	then
-		AICamHdrCheck
-	elif [ ${photo_hdr,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的PHOTO_HDR值，只能为yes或no，可不区分大小写"
-		echo "   [AI CAM模式下的HDR未成功检测，请稍后重试]"
-	fi
-	if [ ${photo_lowlight,,} == "mfnr" ]
-	then
-		AICamMfnrCheck
-	elif [ ${photo_lowlight,,} == "3dnr" ]
-	then
-		#TODO
-		#AICam3dnrCheck
-		sleep 1
-	elif  [ ${photo_lowlight,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的PHOTO_MFNR值，只能为mfnr、3dnr或no，可不区分大小写"
-		echo "   [AI CAM模式下的MFNR未成功检测，请稍后重试]"
-	fi
-	if [ ${photo_fb,,} == "yes" ]
-	then
-		AICamFbCheck
-	elif [ ${photo_fb,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的PHOTO_FB值，只能为yes或no，可不区分大小写"
-		echo "   [AI CAM模式下的FaceBeauty未成功检测，请稍后重试]"
-	fi
-}
-
-stPortraitCheck() {
-	adb logcat -c
-	adb logcat -v brief -b main singlecam_blur_preview:I *:S --regex "version" > logcat_portrait_prev_version.txt &
-	local pid1=$!
-	adb logcat -c
-	adb logcat -v brief -b main singlecam_blur_capture:I *:S --regex "version" > logcat_portrait_cap_version.txt &
-	local pid2=$!
-	adb logcat -c
-	adb logcat -v time -b main TranCam-STSingleBlur *:S --regex "\[processRaw\]E" > logcat_portrait_cap_begin_time.txt &
-	local pid3=$!
-	adb logcat -c
-	adb logcat -v time -b main TranCam-STSingleBlur *:S --regex "\[processRaw\]X" > logcat_portrait_cap_end_time.txt &
-	local pid4=$!
-	echo "  * 请进入或重新进入人像模式 *"
-	while ! [ -s logcat_portrait_prev_version.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	local version=$(sed -n "/version/p" logcat_portrait_prev_version.txt | awk -F '=' '{print $2}')
-	echo "  [Portrait预览虚化版本为：$version]"
-	rm logcat_portrait_prev_version.txt
-	if [ ${product^^} == "A665L" ]
-	then
-		echo ""
-		echo "  * 请识别到人脸后进行拍照 *"
-	fi
-	while ! [ -s logcat_portrait_cap_version.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	version=$(sed -n "2 {/version/p}" logcat_portrait_cap_version.txt | awk -F '=' '{print $2}')
-	echo "  [Portrait拍照虚化版本为：$version]"
-	rm logcat_portrait_cap_version.txt
-	if ! [ ${product^^} == "A665L" ]
-	then
-		echo ""
-		echo "  * 请识别到人脸后进行拍照 *"
-	fi
-	while ! [ -s logcat_portrait_cap_begin_time.txt ]
-	do
-		continue
-	done
-	kill $pid3
-	while ! [ -s logcat_portrait_cap_end_time.txt ]
-	do
-		continue
-	done
-	kill $pid4
-	echo "   虚化拍照时间："
-	echo -n "   "
-	sed -n "2p" logcat_portrait_cap_begin_time.txt
-	echo -n "   "
-	sed -n "2p" logcat_portrait_cap_end_time.txt
-	startTime=$(sed -n "2p" logcat_portrait_cap_begin_time.txt | awk '{print $1 " " $2}')
-	endTime=$(sed -n "2p" logcat_portrait_cap_end_time.txt | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	echo -e "   时间差：$time ms\n"
-	rm logcat_portrait_cap_begin_time.txt
-	rm logcat_portrait_cap_end_time.txt
-	sleep 1
-}
-
-nightSceneMfnrCheck() {
-	echo "   * 请切换至夜景模式下 *"
-	sleep 1
-	mfnrCheck
-}
-
+#==============================================================================
+# 滤镜算法检查
+#==============================================================================
 arcFilterCheck() {
-	adb logcat -c
-	adb logcat -v time -b main TranCam-ArcFilter:I *:S --regex "\[processRaw\]\+" > logcat_filter_cap_begin_time.txt &
-	local pid1=$!
-	adb logcat -v time -b main TranCam-ArcFilter:I *:S --regex "\[processRaw\]\-" > logcat_filter_cap_end_time.txt &
-	local pid2=$!
-	echo "   * 请开启滤镜后进行拍照 *"
-	while ! [ -s logcat_filter_cap_begin_time.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	while ! [ -s logcat_filter_cap_end_time.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	echo "   滤镜拍照时间："
-	echo -n "   "
-	sed -n "2p" logcat_filter_cap_begin_time.txt
-	echo -n "   "
-	sed -n "2p" logcat_filter_cap_end_time.txt
-	local startTime=$(sed -n "2p" logcat_filter_cap_begin_time.txt | awk '{print $1 " " $2}')
-	local endTime=$(sed -n "2p" logcat_filter_cap_end_time.txt | awk '{print $1 " " $2}')
-	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	echo "   时间差：$time ms"
-	rm logcat_filter_cap_begin_time.txt
-	rm logcat_filter_cap_end_time.txt
-	echo ""
-	sleep 1
+	captureStartGrabInfos
+	printNormalTip "请开启滤镜后进行拍照"
+	waitUntilDone ${ARC_FILTER_CAP_BEGIN_INFO[2]}
+	waitUntilDone ${ARC_FILTER_CAP_END_INFO[2]}
+	captureStopGrabInfos
+	captureInfosAnalysis
 }
 
+#==============================================================================
+# 任意模式下的滤镜算法功能检查
+#==============================================================================
+filterCheck() {
+	if [ ${filter,,} == "yes" ]; then
+		printAlgoName "Filter"
+		if [ ${filter_brand,,} == "arc" ]; then
+			arcFilterCheck
+		else
+			printErrorConfigMsgAndExit "滤镜拍照" "FILTER_ALGO" "arc" "NULL"
+		fi
+	elif [ ${filter,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "滤镜拍照" "FILTER" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 普通拍照模式下的算法功能检查
+#==============================================================================
+photoModeCheck() {
+	printModeName "PhotoMode"
+	sceneDetectCheck 	#自动场景检测算法检查
+	photoHDRcheck		#HDR算法检查
+	photoLowLight		#普通拍照模式暗光降噪算法
+	photoFaceBeauty		#普通拍照模式美颜拍照算法
+	filterCheck			#滤镜拍照算法检查
+}
+
+#==============================================================================
+# 美颜拍照模式下的算法功能检查
+#==============================================================================
+fbModeCheck() {
+	if [ ${fb_mode,,} == "yes" ]; then
+		printModeName "FaceBeauty"
+		if [ ${fb_brand,,} == "tran" ]; then
+			tranFbCheck "请进入或重新进入美颜模式"
+		else
+			printErrorConfigMsgAndExit "美颜拍照" "FB_ALGO" "tran" "arc"
+		fi
+	elif [ ${fb_mode,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "美颜拍照" "FB_MODE" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 人像拍照模式下的算法功能检查
+#==============================================================================
+portraitModeCheck() {
+	if [ ${portrait_mode,,} == "yes" ]; then
+		printModeName "Portrait"
+		if [ ${blur_brand,,} == "st" ]; then
+			stPortraitCheck
+		else
+			printErrorConfigMsgAndExit "人像拍照" "BLUR_ALGO" "st" "NULL"
+		fi
+	elif [ ${portrait_mode,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "人像拍照" "PORTRAIT_MODE" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 夜景拍照模式下的算法功能检查
+#==============================================================================
+nightModeCheck() {
+	if [ ${nightscene_mode,,} == "yes" ]; then
+		printModeName "Night"
+		if [ ${nightscene_mode_algo,,} == "mfnr" ]; then
+			printNormalTip "请切换至夜景模式"
+			mfnrCheck
+		else
+			printErrorConfigMsgAndExit "夜景拍照" "NIGHTSCENE_ALGO" "mfnr" "N/A"
+		fi
+	elif [ ${nightscene_mode,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "夜景拍照" "NIGHTSCENE_MODE" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# HDR拍照模式下的算法功能检查
+#==============================================================================
+hdrModeCheck() {
+	if [ ${hdr_mode,,} == "yes" ]; then
+		printModeName "HDR"
+		if [ ${hdr_brand,,} == "sprd" ]; then
+			sprdHDRCheck "请切换至HDR模式"
+		else
+			printErrorConfigMsgAndExit "HDR拍照" "HDR_ALGO" "sprd" "NULL"
+		fi
+	elif [ ${hdr_mode,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "HDR拍照" "HDR_MODE" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 任意模式下的水印拍照算法功能检查
+#==============================================================================
+watermarkPhotoAlgoCheck() {
+	if [ ${photo_wm,,} == "yes" ]; then
+		printAlgoName "PHOTO_WATERMARK"
+		if [ ${photo_wm_brand,,} == "tran" ]; then
+			tranPhotoWMCheck
+		else
+			printErrorConfigMsgAndExit "水印拍照" "PHOTO_WM_ALGO" "tran" "NULL"
+		fi
+	elif [ ${photo_wm,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "水印拍照" "PHOTO_WM" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 任意模式下的水印录像算法功能检查
+#==============================================================================
+watermarkVideoAlgoCheck() {
+	if [ ${video_wm,,} == "yes" ]; then
+		printAlgoName "VIDEO_WATERMARK"
+		if [ ${video_wm_brand,,} == "tran" ]; then
+			tranVideoWMCheck
+		else
+			printErrorConfigMsgAndExit "水印录像" "PHOTO_WM_ALGO" "tran"
+		fi
+	elif [ ${video_wm,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "水印录像" "VIDEO_WM" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 特定模式下的连拍功能检查
+#==============================================================================
+continuousPhotoCheck() {
+	if [ ${continuous_cap,,} == "yes" ]; then
+		printAlgoName "ContinuousCap"
+		continuousCapCheck
+	elif [ ${continuous_cap,,} == "no" ]; then
+		sleep $TIME_WAIT_NORMAL
+	else
+		printErrorConfigMsgAndExit "连拍" "CONTINUOUS_CAP" "yes" "no"
+	fi
+}
+
+#==============================================================================
+# 虚化算法检查
+#==============================================================================
+stPortraitCheck() {
+	previewStartGrabInfos
+	printNormalTip "请重新进入人像模式"
+	waitUntilDone ${ST_PORTRAIT_PREV_VERSION_INFO[2]}
+	previewStopGrabInfos
+	previewInfosAnalysis
+	
+	captureStartGrabInfos
+	printNormalTip "请识别到人脸后进行拍照"
+	waitUntilDone ${ST_PORTRAIT_CAP_VERSION_INFO[2]}
+	waitUntilDone ${ST_PORTRAIT_CAP_BEGIN_INFO[2]}
+	waitUntilDone ${ST_PORTRAIT_CAP_END_INFO[2]}
+	captureStopGrabInfos
+	captureInfosAnalysis
+}
+
+#==============================================================================
+# 水印拍照算法检查
+#==============================================================================
 tranPhotoWMCheck() {
-	adb logcat -c
-	adb logcat -v time -b main TranCam-WaterMark:I *:S --regex "\[processRaw\]\+|\[processRaw\]E" > logcat_photo_wm_cap_begin_time.txt &
-	local pid1=$!
-	adb logcat -v time -b main TranCam-WaterMark:I *:S --regex "\[processRaw\]\-|\[processRaw\]X" > logcat_photo_wm_cap_end_time.txt &
-	local pid2=$!
 	#TODO（版本号）
-	echo "   * 请开启水印后进行拍照 *"
-	while ! [ -s logcat_photo_wm_cap_begin_time.txt ]
-	do
-		continue
-	done
-	kill $pid1
-	while ! [ -s logcat_photo_wm_cap_end_time.txt ]
-	do
-		continue
-	done
-	kill $pid2
-	echo "   水印拍照时间："
-	echo -n "   "
-	sed -n "2p" logcat_photo_wm_cap_begin_time.txt
-	echo -n "   "
-	sed -n "2p" logcat_photo_wm_cap_end_time.txt
-	local startTime=$(sed -n "2p" logcat_photo_wm_cap_begin_time.txt | awk '{print $1 " " $2}')
-	local endTime=$(sed -n "2p" logcat_photo_wm_cap_end_time.txt | awk '{print $1 " " $2}')
-	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	echo "   时间差：$time ms"
-	rm logcat_photo_wm_cap_begin_time.txt
-	rm logcat_photo_wm_cap_end_time.txt
-	echo ""
-	sleep 1
+	captureStartGrabInfos
+	printNormalTip "请开启水印后进行拍照"
+	waitUntilDone ${TRAN_PHOTO_WM_BEGIN_TIME[2]}
+	waitUntilDone ${TRAN_PHOTO_WM_END_TIME[2]}
+	captureStopGrabInfos
+	captureInfosAnalysis
 }
 
+#==============================================================================
+# 水印录像算法检查
+#==============================================================================
 tranVideoWMCheck() {
-	adb logcat -c
 	echo ""
+	printDivideLine
 	#TODO（版本，时间）
 }
 
+#==============================================================================
+# 连拍异常检查
+#==============================================================================
 continuousCapCheck() {
-	echo " • ContinuousCapExceptionCheck"
-	if [ ${fb_brand,,} ==  "tran" ]
+	printInteractTip "请确保关闭[AI]、[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认"
+	read CMD
+	printDivideLine
+	captureStartGrabInfos
+	printNormalTip "请进行连拍"
+	printInteractTip "请在完成连拍后回车确认"
+	read CMD
+	printDivideLine
+	captureStopGrabInfos
+	captureInfosAnalysis
+	if ! [ -s ${TRAN_FB_CAP_BEGIN_INFO[2]} ]
 	then
-		local TAG="TranCam-FaceBeauty"
-	elif [ ${fb_brand,,} == "arc" ]
-	then
-		local TAG="TranCam-ArcFaceBeauty"
+		printResult "[连拍时未执行美颜算法]"
 	else
-		echo "   请检查配置文件中所选项目的FB_ALGO值，目前只支持tran或arc，可不区分大小写"
-		echo "   [连拍异常未成功检测，请稍后重试]"
-		return
+		printErrorResult "ERROR：连拍时可能执行了美颜算法"
 	fi
-	read -p "   * 请确保关闭[AI]、[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认 *"
-	echo "   * 请进行连拍 *"
-	adb logcat -c
-	adb logcat -v brief -b main $TAG *:S --regex "\[processRaw\]" > logcat_continuous_cap_fb.txt &
-	local pid1=$!
-	adb logcat -v brief -b main TranCam-STSingleBlur *:S --regex "\[processRaw\]" > logcat_continuous_cap_blur.txt &
-	local pid2=$!
-	adb logcat -v brief -b main MFNRNode *:S > logcat_continuous_cap_mfnr.txt &
-	local pid3=$!
-	read -p "   * 请在完成连拍后回车确认 *"
-	echo ""
-	sleep 1
-	kill $pid1
-	kill $pid2
-	kill $pid3
-	if ! [ -s logcat_continuous_cap_fb.txt ]
+	if ! [ -s ${ST_PORTRAIT_CAP_BEGIN_INFO[2]} ]
 	then
-		echo "   [连拍时未执行美颜算法]"
+		printResult "[连拍时未执行虚化算法]"
 	else
-		echo "   ERROR：连拍时可能执行了美颜算法"
+		printErrorResult "ERROR：连拍时可能执行了虚化算法"
 	fi
-	if ! [ -s logcat_continuous_cap_blur.txt ]
+	if ! [ -s ${SPRD_MFNR_CAP_BEGIN_INFO[2]} ]
 	then
-		echo "   [连拍时未执行虚化算法]"
+		printResult "[连拍时未执行MFNR算法]"
 	else
-		echo "   ERROR：连拍时可能执行了虚化算法"
+		printErrorResult "ERROR：连拍时可能执行了MFNR算法"
 	fi
-	if ! [ -s logcat_continuous_cap_mfnr.txt ]
-	then
-		echo "   [连拍时未执行MFNR算法]"
-	else
-		echo "   ERROR：连拍时可能执行了MFNR算法"
-	fi
-	rm logcat_continuous_cap_fb.txt
-	rm logcat_continuous_cap_blur.txt
-	rm logcat_continuous_cap_mfnr.txt
-	echo ""
 }
 
-exceptionCheck() {
-	echo "◆ ExceptionCheck"
-	if [ ${continuous_cap,,} == "yes" ]
-	then
-		continuousCapCheck
-	elif [ ${continuous_cap,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的CONTINUOUS_CAP值，只能为yes或no，可不区分大小写"
-		echo "   [连拍异常未成功检测，请稍后重试]"
-	fi
-	#TODO
-}
-
+#==============================================================================
+# 算法检查入口函数
+#==============================================================================
 camCheck() {
-	AICamCheck
-	if [ ${fb_mode,,} == "yes" ]
-	then
-		echo "◆ FaceBeauty"
-		if [ ${fb_brand,,} == "tran" ]
-		then
-			tranFbCheck "请进入或重新进入美颜模式"
-		elif [ ${fb_brand,,} == "arc" ]
-		then
-			arcFbCheck "请进入或重新进入美颜模式"
+	photoModeCheck 				#拍照模式检查
+	fbModeCheck 				#美颜模式检查
+	portraitModeCheck			#人像模式检查
+	nightModeCheck				#夜景模式检查
+	hdrModeCheck				#HDR模式检查
+	
+	watermarkPhotoAlgoCheck		#水印拍照算法检查
+	#watermarkVideoAlgoCheck		#水印录像算法检查
+	
+	continuousPhotoCheck		#连拍功能检查
+}
+
+#==============================================================================
+# 检查结束后询问用户是否删除中间文件
+#==============================================================================
+interactDeleteFiles() {
+	while true
+	do
+		printInteractTip "是否需要删除脚本运行过程中生成的所有中间文件？[Y/N][直接回车默认Y] "
+		read delete
+		printDivideLine
+		if [ -z $delete ] || [ ${delete,,} == "y" ]; then
+			printNormalTip "删除中......"
+			deleteFile ${SPRD_AISCENE_VERSION_INFO[2]}
+			deleteFile ${SPRD_AISCENE_RESULT_INFO[2]}
+			deleteFile ${TRAN_ASD_VERSION_INFO[2]}
+			deleteFile ${TRAN_ASD_RESULT_INFO[2]}
+			deleteFile ${SPRD_HDR_VERSION_INFO[2]}
+			deleteFile ${SPRD_HDR_CAP_TIME_INFO[2]}
+			deleteFile ${SPRD_MFNR_VERSION_INFO[2]}
+			deleteFile ${SPRD_MFNR_CAP_BEGIN_INFO[2]}
+			deleteFile ${SPRD_MFNR_CAP_END_INFO[2]}
+			deleteFile ${TRAN_FB_VERSION_INFO[2]}
+			deleteFile ${TRAN_FB_LEVELS_INFO[2]}
+			deleteFile ${TRAN_FB_INDEX_INFO[2]}
+			deleteFile ${TRAN_FB_PREV_PERF_INFO[2]}
+			deleteFile ${TRAN_FB_CAP_BEGIN_INFO[2]}
+			deleteFile ${TRAN_FB_CAP_END_INFO[2]}
+			deleteFile ${TRAN_FB_CUR_INDEX_INFO[2]}
+			deleteFile ${ST_PORTRAIT_PREV_VERSION_INFO[2]}
+			deleteFile ${ST_PORTRAIT_CAP_VERSION_INFO[2]}
+			deleteFile ${ST_PORTRAIT_CAP_BEGIN_INFO[2]}
+			deleteFile ${ST_PORTRAIT_CAP_END_INFO[2]}
+			deleteFile ${ARC_FILTER_CAP_BEGIN_INFO[2]}
+			deleteFile ${ARC_FILTER_CAP_END_INFO[2]}
+			deleteFile ${TRAN_PHOTO_WM_BEGIN_TIME[2]}
+			deleteFile ${TRAN_PHOTO_WM_END_TIME[2]}
+			printNormalTip "删除完成"
+			break
+		elif [ ${delete,,} == "n" ]; then
+			printNormalTip "中间文件未删除"
+			break
 		else
-			echo "   请检查配置文件中所选项目的FB_ALGO值，目前只支持tran或arc，可不区分大小写"
-			echo "   [FaceBeauty模式未成功检测，请稍后重试]"
+			printNormalTip "请输入[Y/N]"
 		fi
-	elif [ ${fb_mode,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的FB_MODE值，只能为yes或no，可不区分大小写"
-		echo "   [FaceBeauty模式未成功检测，请稍后重试]"
-	fi
-	if [ ${portrait_mode,,} == "yes" ]
-	then
-		echo "◆ Portrait"
-		if [ ${blur_brand,,} == "st" ]
-		then
-			stPortraitCheck
-		else
-			echo "   请检查配置文件中所选项目的BLUR_ALGO值，目前只支持st，可不区分大小写"
-			echo "   [Portrait模式未成功检测，请稍后重试]"
-		fi
-	elif [ ${portrait_mode,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的PORTRAIT_MODE值，只能为yes或no，可不区分大小写"
-		echo "   [Portrait模式未成功检测，请稍后重试]"
-	fi
-	if [ ${nightscene_mode,,} == "yes" ]
-	then
-		echo "◆ NightScene"
-		if [ ${nightscene_mode_algo,,} == "mfnr" ]
-		then
-			nightSceneMfnrCheck
-		elif [ ${nightscene_mode_algo,,} == "3dnr" ]
-		then
-			#TODO
-			#nightScene3dnrCheck
-			sleep 1
-		else
-			echo "   请检查配置文件中所选项目的NIGHTSCENE_ALGO值，目前只支持mfnr或3dnr，可不区分大小写"
-			echo "   [NightScene模式未成功检测，请稍后重试]"
-		fi
-	elif [ ${nightscene_mode,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的NIGHTSCENE_MODE值，只能为yes或no，可不区分大小写"
-		echo "   [NightScene模式未成功检测，请稍后重试]"
-	fi
-	if [ ${hdr_mode,,} == "yes" ]
-	then
-		echo "◆ HDR"
-		if [ ${hdr_brand,,} == "sprd" ]
-		then
-			sprdHdrCheck "请切换至HDR模式"
-		else
-			echo "   请检查配置文件中所选项目的HDR_ALGO值，目前只支持sprd，可不区分大小写"
-			echo "   [HDR未成功检测，请稍后重试]"
-		fi
-	elif [ ${hdr_mode,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的HDR_MODE值，只能为yes或no，可不区分大小写"
-		echo "   [HDR模式未成功检测，请稍后重试]"
-	fi
-	if [ ${filter,,} == "yes" ]
-	then
-		echo "◆ FILTER"
-		if [ ${filter_brand,,} == "arc" ]
-		then
-			arcFilterCheck
-		else
-			echo "   请检查配置文件中所选项目的FILTER_ALGO值，目前只支持arc，可不区分大小写"
-			echo "   [滤镜未成功检测，请稍后重试]"
-		fi
-	elif [ ${filter,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的FILTER值，只能为yes或no，可不区分大小写"
-		echo "   [滤镜未成功检测，请稍后重试]"
-	fi
-	if [ ${photo_wm,,} == "yes" ]
-	then
-		echo "◆ PHOTO_WATERMARK"
-		if [ ${photo_wm_brand,,} == "tran" ]
-		then
-			tranPhotoWMCheck
-		else
-			echo "   请检查配置文件中所选项目的PHOTO_WM_ALGO值，目前只支持tran，可不区分大小写"
-			echo "   [照片水印未成功检测，请稍后重试]"
-		fi
-	elif [ ${photo_wm,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的PHOTO_WM值，只能为yes或no，可不区分大小写"
-		echo "   [照片水印未成功检测，请稍后重试]"
-	fi
-	if [ ${video_wm,,} == "yes" ]
-	then
-		echo "◆ VIDEO_WATERMARK"
-		if [ ${video_wm_brand,,} == "tran" ]
-		then
-			tranVideoWMCheck
-		else
-			echo "   请检查配置文件中所选项目的PHOTO_WM_ALGO值，目前只支持tran，可不区分大小写"
-			echo "   [视频水印未成功检测，请稍后重试]"
-		fi
-	elif [ ${video_wm,,} == "no" ]
-	then
-		sleep 1
-	else
-		echo "   请检查配置文件中所选项目的VIDEO_WM值，只能为yes或no，可不区分大小写"
-		echo "   [视频水印未成功检测，请稍后重试]"
-	fi
-	exceptionCheck
+	done
 }
 
 main() {
-	hint
-	getProductList
-	chooseProduct
-	
-	if [ ${brand,,} == "tecno" ]
-	then
-		echo -e "当前相机brand为TECNO\n"
-	elif [ ${brand,,} == "itel" ]
-	then
-		echo -e "当前相机brand为ITEL\n"
-	elif [ ${brand,,} == "infinix" ]
-	then
-		echo -e "当前相机brand为INFINIX\n"
-	else
-		echo "ERROR！请检查配置文件中的brand配置，目前该脚本只支持检查TECNO、ITEL或INFINIX其中一种。"
-	fi
-	sleep 1
-	camCheck
+	hint 						#脚本功能展示提示语部分
+	getProductList 				#加载同级目录下的配置文件
+	chooseProduct				#提示用户选择需要检查的项目
+	camCheck					#算法检查入口
+	interactDeleteFiles			#检查结束询问用户是否删除中间文件
 }
 
 main
