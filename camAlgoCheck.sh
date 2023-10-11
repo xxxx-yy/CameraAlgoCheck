@@ -1103,13 +1103,13 @@ continuousCapCheck() {
 # 算法检查入口函数
 #==============================================================================
 camCheck() {
-	#photoModeCheck 				#拍照模式检查
-	#fbModeCheck 				#美颜模式检查
-	#portraitModeCheck			#人像模式检查
-	#nightModeCheck				#夜景模式检查
-	#hdrModeCheck				#HDR模式检查
+	photoModeCheck 				#拍照模式检查
+	fbModeCheck 				#美颜模式检查
+	portraitModeCheck			#人像模式检查
+	nightModeCheck				#夜景模式检查
+	hdrModeCheck				#HDR模式检查
 	
-	#watermarkPhotoAlgoCheck		#水印拍照算法检查
+	watermarkPhotoAlgoCheck		#水印拍照算法检查
 	#watermarkVideoAlgoCheck		#水印录像算法检查
 	
 	continuousPhotoCheck		#连拍功能检查
