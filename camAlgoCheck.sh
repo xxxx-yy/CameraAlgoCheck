@@ -38,6 +38,16 @@ ARC_FILTER_CAP_END_INFO=("TranCam-ArcFilter:I" "\[processRaw\]\-" "logcat_filter
 TRAN_PHOTO_WM_BEGIN_TIME=("TranCam-WaterMark:I" "\[processRaw\]\+|\[processRaw\]E" "logcat_photo_wm_cap_begin_time.txt")
 TRAN_PHOTO_WM_END_TIME=("TranCam-WaterMark:I" "\[processRaw\]\-|\[processRaw\]X" "logcat_photo_wm_cap_end_time.txt")
 
+#检测命令
+CMD_SPRD_AISCENE=0
+CMD_TRAN_ASD=1
+CMD_SPRD_HDR=2
+CMD_SPRD_MFNR=3
+CMD_TRAN_FB=4
+CMD_ST_PORTRAIT=5
+CMD_ARC_FILTER=6
+CMD_TRAN_WATERMARK=7
+
 aiscene_version_pid=0
 aiscene_result_pid=0
 asd_version_pid=0
@@ -256,249 +266,333 @@ grabOneInfoWithTime() {
 
 #==============================================================================
 # 开始预览场景所有算法和功能的关键信息抓取
+# $@ 需要检测的算法对应命令参数
 #==============================================================================
 previewStartGrabInfos() {
-	printInteractTip "生成的中间文件即将被覆盖，如需查看请先查看，按回车确认覆盖"
-	read CMD
-	printDivideLine
+	#printInteractTip "生成的中间文件即将被覆盖，如需查看请先查看，按回车确认覆盖"
+	#read CMD
+	#printDivideLine
 	adb logcat -c
-	#sprd aiscene
-	deleteFile ${SPRD_AISCENE_VERSION_INFO[2]}
-	deleteFile ${SPRD_AISCENE_RESULT_INFO[2]}
-	aiscene_version_pid=$(grabOneInfo "${SPRD_AISCENE_VERSION_INFO[@]}")
-	aiscene_result_pid=$(grabOneInfo "${SPRD_AISCENE_RESULT_INFO[@]}")
-	
-	#tran asd
-	deleteFile ${TRAN_ASD_VERSION_INFO[2]}
-	deleteFile ${TRAN_ASD_RESULT_INFO[2]}
-	asd_version_pid=$(grabOneInfo "${TRAN_ASD_VERSION_INFO[@]}")
-	asd_result_pid=$(grabOneInfo "${TRAN_ASD_RESULT_INFO[@]}")
-	
-	#tran fb
-	deleteFile ${TRAN_FB_VERSION_INFO[2]}
-	deleteFile ${TRAN_FB_LEVELS_INFO[2]}
-	deleteFile ${TRAN_FB_INDEX_INFO[2]}
-	deleteFile ${TRAN_FB_PREV_PERF_INFO[2]}
-	tran_fb_version_pid=$(grabOneInfo "${TRAN_FB_VERSION_INFO[@]}")
-	tran_fb_levels_pid=$(grabOneInfo "${TRAN_FB_LEVELS_INFO[@]}")
-	tran_fb_index_pid=$(grabOneInfo "${TRAN_FB_INDEX_INFO[@]}")
-	tran_fb_perf_pid=$(grabOneInfoWithTime "${TRAN_FB_PREV_PERF_INFO[@]}")
-	
-	#st portrait
-	deleteFile ${ST_PORTRAIT_PREV_VERSION_INFO[2]}
-	st_portrait_prev_version_pid=$(grabOneInfo "${ST_PORTRAIT_PREV_VERSION_INFO[@]}")
+
+	for item in $@
+	do
+		case $item in
+        $CMD_SPRD_AISCENE)
+            #sprd aiscene
+			deleteFile ${SPRD_AISCENE_VERSION_INFO[2]}
+			deleteFile ${SPRD_AISCENE_RESULT_INFO[2]}
+			aiscene_version_pid=$(grabOneInfo "${SPRD_AISCENE_VERSION_INFO[@]}")
+			aiscene_result_pid=$(grabOneInfo "${SPRD_AISCENE_RESULT_INFO[@]}")
+            ;;
+        $CMD_TRAN_ASD)
+            #tran asd
+			deleteFile ${TRAN_ASD_VERSION_INFO[2]}
+			deleteFile ${TRAN_ASD_RESULT_INFO[2]}
+			asd_version_pid=$(grabOneInfo "${TRAN_ASD_VERSION_INFO[@]}")
+			asd_result_pid=$(grabOneInfo "${TRAN_ASD_RESULT_INFO[@]}")
+            ;;
+		$CMD_TRAN_FB)
+            #tran fb
+			deleteFile ${TRAN_FB_VERSION_INFO[2]}
+			deleteFile ${TRAN_FB_LEVELS_INFO[2]}
+			deleteFile ${TRAN_FB_INDEX_INFO[2]}
+			deleteFile ${TRAN_FB_PREV_PERF_INFO[2]}
+			tran_fb_version_pid=$(grabOneInfo "${TRAN_FB_VERSION_INFO[@]}")
+			tran_fb_levels_pid=$(grabOneInfo "${TRAN_FB_LEVELS_INFO[@]}")
+			tran_fb_index_pid=$(grabOneInfo "${TRAN_FB_INDEX_INFO[@]}")
+			tran_fb_perf_pid=$(grabOneInfoWithTime "${TRAN_FB_PREV_PERF_INFO[@]}")
+            ;;
+		$CMD_ST_PORTRAIT)
+            #st portrait
+			deleteFile ${ST_PORTRAIT_PREV_VERSION_INFO[2]}
+			st_portrait_prev_version_pid=$(grabOneInfo "${ST_PORTRAIT_PREV_VERSION_INFO[@]}")
+            ;;
+		esac
+	done
 }
 
 #==============================================================================
 # 停止预览场景所有算法和功能的关键信息抓取
+# $@ 开启了检测的算法对应命令参数
 #==============================================================================
 previewStopGrabInfos() {
-	kill $aiscene_version_pid
-	kill $aiscene_result_pid
-	kill $asd_version_pid
-	kill $asd_result_pid
-	kill $tran_fb_version_pid
-	kill $tran_fb_levels_pid
-	kill $tran_fb_index_pid
-	kill $tran_fb_perf_pid
-	kill $st_portrait_prev_version_pid
+	for item in $@
+	do
+		case $item in
+        $CMD_SPRD_AISCENE)
+            #sprd aiscene
+			kill $aiscene_version_pid
+			kill $aiscene_result_pid
+            ;;
+		$CMD_TRAN_ASD)
+            #tran asd
+			kill $asd_version_pid
+			kill $asd_result_pid
+            ;;
+		$CMD_TRAN_FB)
+            #tran fb
+			kill $tran_fb_version_pid
+			kill $tran_fb_levels_pid
+			kill $tran_fb_index_pid
+			kill $tran_fb_perf_pid
+            ;;
+		$CMD_ST_PORTRAIT)
+            #st portrait
+			kill $st_portrait_prev_version_pid
+            ;;
+		esac
+	done
 }
 
 #==============================================================================
 # 分析预览场景所有算法和功能的关键信息,并整理输出
 #==============================================================================
 previewInfosAnalysis() {
-	if [ ${asd_brand,,} == "sprd" ]; then
-		#sprd aiscene
-		local aiscene_version=$(sed -n "2p" ${SPRD_AISCENE_VERSION_INFO[2]} | awk -F '[' '{print $3}' | awk -F ']' '{print $1}')
-		if [[ ${aiscene_version} != "" ]]; then
-			printResult "[AIScene版本为: $aiscene_version]"
-		fi
-		local aiscene_result=$(sed -n "2p" ${SPRD_AISCENE_RESULT_INFO[2]} | awk -F ':' '{print $4}')
-		if [[ ${aiscene_result} != "" ]]; then
-			printResult "[AIScene识别到: ${AISCENE_RESULT_ENUM[aiscene_result]}]"
-		fi
-	elif [ ${asd_brand,,} == "tran" ]; then
-		#tran asd
-		local asd_version=$(sed -n "2p" ${TRAN_ASD_VERSION_INFO[2]} | awk -F ':' '{print $3}')
-		if [[ ${asd_version} != "" ]]; then
-			printResult "[ASD版本为: $asd_version]"
-		fi
-		local illumination_type=$(sed -n "2p" ${TRAN_ASD_RESULT_INFO[2]} | awk -F ':' '{print $3}' | awk -F ',' '{print $1}' | awk -F '=' '{print $2}')
-		local scene_type=$(sed -n "2p" ${TRAN_ASD_RESULT_INFO[2]} | awk -F ':' '{print $3}' | awk -F ',' '{print $2}' | awk -F '=' '{print $2}')
-		if [[ ${illumination_type} != "" ]]; then
-			printResult "[ASD识别到: 明亮度：$illumination_type]"
-		fi
-		if [[ ${scene_type} != "" ]]; then
-			printResult "[           场  景：$scene_type]"
-		fi
-	else
-		printErrorConfigMsgAndExit "普通拍照" "asd_brand" "sprd" "tran"
-	fi
-	
-	#tran fb 
-	local fb_version=$(sed -n "2p" ${TRAN_FB_VERSION_INFO[2]} | awk -F ':' '{print $3}')
-	if [[ ${fb_version} != "" ]]; then
-		printResult "[FaceBeauty当前的版本为: $fb_version]"
-	fi
-	local fb_currLev=$(sed -n "2p" ${TRAN_FB_INDEX_INFO[2]} | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
-	if [[ ${fb_currLev} != "" ]]; then
-		printResult "[FaceBeauty当前的等级为: $fb_currLev]"
-	fi
-	local levelList=$(sed -n "2p" ${TRAN_FB_LEVELS_INFO[2]} | awk -F ':' '{print $3}')
-	if [[ ${levelList} != "" ]]; then
-		printResult "[配置文件中配置的该项目FaceBeauty支持的最高等级为: $fb_level]"
-		printResult "[FaceBeauty实际支持的等级有: $levelList]"
-	fi
-	if [ `tail -n 1 ${TRAN_FB_PREV_PERF_INFO[2]} | grep -c "X ret=0"` -eq 0 ]; then
-		local startTime=$(tail -n 3 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
-		local endTime=$(tail -n 2 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
-	else
-		local startTime=$(tail -n 2 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
-		local endTime=$(tail -n 1 ${TRAN_FB_PREV_PERF_INFO[2]} | awk '{print $1 " " $2}')
-	fi
-	local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[美颜预览处理耗时为: $time ms]"
-	fi
-	
-	#st portrait
-	local st_version=$(sed -n "2p" ${ST_PORTRAIT_PREV_VERSION_INFO[2]} | awk -F '=' '{print $2}')
-	if [[ ${st_version} != "" ]]; then
-		printResult "[预览虚化版本为: $st_version]"
-	fi
+	for item in $@
+	do
+		case $item in
+        $CMD_SPRD_AISCENE)
+			#sprd aiscene
+			local aiscene_version=$(sed -n "2p" ${SPRD_AISCENE_VERSION_INFO[2]} | awk -F '[' '{print $3}' | awk -F ']' '{print $1}')
+			if [[ ${aiscene_version} != "" ]]; then
+				printResult "[AIScene版本为: $aiscene_version]"
+			fi
+			local aiscene_result=$(sed -n "2p" ${SPRD_AISCENE_RESULT_INFO[2]} | awk -F ':' '{print $4}')
+			if [[ ${aiscene_result} != "" ]]; then
+				printResult "[AIScene识别到: ${AISCENE_RESULT_ENUM[aiscene_result]}]"
+			fi
+            ;;
+		$CMD_TRAN_ASD)
+            #tran asd
+			local asd_version=$(sed -n "2p" ${TRAN_ASD_VERSION_INFO[2]} | awk -F ':' '{print $3}')
+			if [[ ${asd_version} != "" ]]; then
+				printResult "[ASD版本为: $asd_version]"
+			fi
+			local illumination_type=$(sed -n "2p" ${TRAN_ASD_RESULT_INFO[2]} | awk -F ':' '{print $3}' | awk -F ',' '{print $1}' | awk -F '=' '{print $2}')
+			local scene_type=$(sed -n "2p" ${TRAN_ASD_RESULT_INFO[2]} | awk -F ':' '{print $3}' | awk -F ',' '{print $2}' | awk -F '=' '{print $2}')
+			if [[ ${illumination_type} != "" ]]; then
+				printResult "[ASD识别到: 明亮度：$illumination_type]"
+			fi
+			if [[ ${scene_type} != "" ]]; then
+				printResult "[           场  景：$scene_type]"
+			fi
+            ;;
+		$CMD_TRAN_FB)
+            #tran fb
+			local fb_version=$(sed -n "2p" ${TRAN_FB_VERSION_INFO[2]} | awk -F ':' '{print $3}')
+			if [[ ${fb_version} != "" ]]; then
+				printResult "[FaceBeauty当前的版本为: $fb_version]"
+			fi
+			local fb_currLev=$(sed -n "2p" ${TRAN_FB_INDEX_INFO[2]} | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
+			if [[ ${fb_currLev} != "" ]]; then
+				printResult "[FaceBeauty当前的等级为: $fb_currLev]"
+			fi
+			local levelList=$(sed -n "2p" ${TRAN_FB_LEVELS_INFO[2]} | awk -F ':' '{print $3}')
+			if [[ ${levelList} != "" ]]; then
+				printResult "[配置文件中配置的该项目FaceBeauty支持的最高等级为: $fb_level]"
+				printResult "[FaceBeauty实际支持的等级有: $levelList]"
+			fi
+			if [ `tail -n 1 ${TRAN_FB_PREV_PERF_INFO[2]} | grep -c "X ret=0"` -eq 0 ]; then
+				local startTime=$(tail -n 3 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
+				local endTime=$(tail -n 2 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
+			else
+				local startTime=$(tail -n 2 ${TRAN_FB_PREV_PERF_INFO[2]} | head -n 1 | awk '{print $1 " " $2}')
+				local endTime=$(tail -n 1 ${TRAN_FB_PREV_PERF_INFO[2]} | awk '{print $1 " " $2}')
+			fi
+			local time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[美颜预览处理耗时为: $time ms]"
+			fi
+            ;;
+		$CMD_ST_PORTRAIT)
+            #st portrait
+			local st_version=$(sed -n "2p" ${ST_PORTRAIT_PREV_VERSION_INFO[2]} | awk -F '=' '{print $2}')
+			if [[ ${st_version} != "" ]]; then
+				printResult "[预览虚化版本为: $st_version]"
+			fi
+            ;;
+		esac
+	done
 }
 
 #==============================================================================
 # 开始拍照场景所有算法和功能的关键信息抓取
 #==============================================================================
 captureStartGrabInfos() {
-	printInteractTip "生成的中间文件即将被覆盖，如需查看请先查看，按回车确认覆盖"
-	read CMD
-	printDivideLine
+	#printInteractTip "生成的中间文件即将被覆盖，如需查看请先查看，按回车确认覆盖"
+	#read CMD
+	#printDivideLine
 	adb logcat -c
-	#sprd hdr
-	deleteFile ${SPRD_HDR_VERSION_INFO[2]}
-	deleteFile ${SPRD_HDR_CAP_TIME_INFO[2]}
-	sprd_hdr_version_pid=$(grabOneInfo "${SPRD_HDR_VERSION_INFO[@]}")
-	sprd_hdr_cap_time_pid=$(grabOneInfo "${SPRD_HDR_CAP_TIME_INFO[@]}")
 	
-	#sprd mfnr
-	deleteFile ${SPRD_MFNR_VERSION_INFO[2]}
-	deleteFile ${SPRD_MFNR_CAP_BEGIN_INFO[2]}
-	deleteFile ${SPRD_MFNR_CAP_END_INFO[2]}
-	sprd_mfnr_version_pid=$(grabOneInfo "${SPRD_MFNR_VERSION_INFO[@]}")
-	sprd_mfnr_version_begin_pid=$(grabOneInfoWithTime "${SPRD_MFNR_CAP_BEGIN_INFO[@]}")
-	sprd_mfnr_version_end_pid=$(grabOneInfoWithTime "${SPRD_MFNR_CAP_END_INFO[@]}")
-	
-	#tran fb
-	deleteFile ${TRAN_FB_CAP_BEGIN_INFO[2]}
-	deleteFile ${TRAN_FB_CAP_END_INFO[2]}
-	tran_fb_cap_begin_pid=$(grabOneInfoWithTime "${TRAN_FB_CAP_BEGIN_INFO[@]}")
-	tran_fb_cap_end_pid=$(grabOneInfoWithTime "${TRAN_FB_CAP_END_INFO[@]}")
-	
-	#st portrait
-	deleteFile ${ST_PORTRAIT_CAP_VERSION_INFO[2]}
-	deleteFile ${ST_PORTRAIT_CAP_BEGIN_INFO[2]}
-	deleteFile ${ST_PORTRAIT_CAP_END_INFO[2]}
-	st_portrait_cap_version_pid=$(grabOneInfo "${ST_PORTRAIT_CAP_VERSION_INFO[@]}")
-	st_portrait_cap_begin_pid=$(grabOneInfoWithTime "${ST_PORTRAIT_CAP_BEGIN_INFO[@]}")
-	st_portrait_cap_end_pid=$(grabOneInfoWithTime "${ST_PORTRAIT_CAP_END_INFO[@]}")
-	
-	#arc filter
-	deleteFile ${ARC_FILTER_CAP_BEGIN_INFO[2]}
-	deleteFile ${ARC_FILTER_CAP_END_INFO[2]}
-	arc_filter_cap_begin_pid=$(grabOneInfoWithTime "${ARC_FILTER_CAP_BEGIN_INFO[@]}")
-	arc_filter_cap_end_pid=$(grabOneInfoWithTime "${ARC_FILTER_CAP_END_INFO[@]}")
-	
-	#tran_photo_wm
-	deleteFile ${TRAN_PHOTO_WM_BEGIN_TIME[2]}
-	deleteFile ${TRAN_PHOTO_WM_END_TIME[2]}
-	tran_photoWM_cap_begin_pid=$(grabOneInfoWithTime "${TRAN_PHOTO_WM_BEGIN_TIME[@]}")
-	tran_photoWM_cap_end_pid=$(grabOneInfoWithTime "${TRAN_PHOTO_WM_END_TIME[@]}")
+	for item in $@
+	do
+		case $item in
+        $CMD_SPRD_HDR)
+            #sprd hdr
+			deleteFile ${SPRD_HDR_VERSION_INFO[2]}
+			deleteFile ${SPRD_HDR_CAP_TIME_INFO[2]}
+			sprd_hdr_version_pid=$(grabOneInfo "${SPRD_HDR_VERSION_INFO[@]}")
+			sprd_hdr_cap_time_pid=$(grabOneInfo "${SPRD_HDR_CAP_TIME_INFO[@]}")
+            ;;
+		$CMD_SPRD_MFNR)
+            #sprd mfnr
+			deleteFile ${SPRD_MFNR_VERSION_INFO[2]}
+			deleteFile ${SPRD_MFNR_CAP_BEGIN_INFO[2]}
+			deleteFile ${SPRD_MFNR_CAP_END_INFO[2]}
+			sprd_mfnr_version_pid=$(grabOneInfo "${SPRD_MFNR_VERSION_INFO[@]}")
+			sprd_mfnr_version_begin_pid=$(grabOneInfoWithTime "${SPRD_MFNR_CAP_BEGIN_INFO[@]}")
+			sprd_mfnr_version_end_pid=$(grabOneInfoWithTime "${SPRD_MFNR_CAP_END_INFO[@]}")
+            ;;
+		$CMD_TRAN_FB)
+            #tran fb
+			deleteFile ${TRAN_FB_CAP_BEGIN_INFO[2]}
+			deleteFile ${TRAN_FB_CAP_END_INFO[2]}
+			tran_fb_cap_begin_pid=$(grabOneInfoWithTime "${TRAN_FB_CAP_BEGIN_INFO[@]}")
+			tran_fb_cap_end_pid=$(grabOneInfoWithTime "${TRAN_FB_CAP_END_INFO[@]}")
+            ;;
+		$CMD_ST_PORTRAIT)
+            #st portrait
+			deleteFile ${ST_PORTRAIT_CAP_VERSION_INFO[2]}
+			deleteFile ${ST_PORTRAIT_CAP_BEGIN_INFO[2]}
+			deleteFile ${ST_PORTRAIT_CAP_END_INFO[2]}
+			st_portrait_cap_version_pid=$(grabOneInfo "${ST_PORTRAIT_CAP_VERSION_INFO[@]}")
+			st_portrait_cap_begin_pid=$(grabOneInfoWithTime "${ST_PORTRAIT_CAP_BEGIN_INFO[@]}")
+			st_portrait_cap_end_pid=$(grabOneInfoWithTime "${ST_PORTRAIT_CAP_END_INFO[@]}")
+            ;;
+		$CMD_ARC_FILTER)
+            #arc filter
+			deleteFile ${ARC_FILTER_CAP_BEGIN_INFO[2]}
+			deleteFile ${ARC_FILTER_CAP_END_INFO[2]}
+			arc_filter_cap_begin_pid=$(grabOneInfoWithTime "${ARC_FILTER_CAP_BEGIN_INFO[@]}")
+			arc_filter_cap_end_pid=$(grabOneInfoWithTime "${ARC_FILTER_CAP_END_INFO[@]}")
+            ;;
+		$CMD_TRAN_WATERMARK)
+            #tran_photo_wm
+			deleteFile ${TRAN_PHOTO_WM_BEGIN_TIME[2]}
+			deleteFile ${TRAN_PHOTO_WM_END_TIME[2]}
+			tran_photoWM_cap_begin_pid=$(grabOneInfoWithTime "${TRAN_PHOTO_WM_BEGIN_TIME[@]}")
+			tran_photoWM_cap_end_pid=$(grabOneInfoWithTime "${TRAN_PHOTO_WM_END_TIME[@]}")
+            ;;
+		esac
+	done
 }
 
 #==============================================================================
 # 停止拍照场景所有算法和功能的关键信息抓取
 #==============================================================================
 captureStopGrabInfos() {
-	kill $sprd_hdr_version_pid
-	kill $sprd_hdr_cap_time_pid
-	kill $sprd_mfnr_version_pid
-	kill $sprd_mfnr_version_begin_pid
-	kill $sprd_mfnr_version_end_pid
-	kill $tran_fb_cap_begin_pid
-	kill $tran_fb_cap_end_pid
-	kill $st_portrait_cap_version_pid
-	kill $st_portrait_cap_begin_pid
-	kill $st_portrait_cap_end_pid
-	kill $arc_filter_cap_begin_pid
-	kill $arc_filter_cap_end_pid
-	kill $tran_photoWM_cap_begin_pid
-	kill $tran_photoWM_cap_end_pid
+	for item in $@
+	do
+		case $item in
+        $CMD_SPRD_HDR)
+            #sprd hdr
+			kill $sprd_hdr_version_pid
+			kill $sprd_hdr_cap_time_pid
+            ;;
+		$CMD_SPRD_MFNR)
+            #sprd mfnr
+			kill $sprd_mfnr_version_pid
+			kill $sprd_mfnr_version_begin_pid
+			kill $sprd_mfnr_version_end_pid
+            ;;
+		$CMD_TRAN_FB)
+            #tran fb
+			kill $tran_fb_cap_begin_pid
+			kill $tran_fb_cap_end_pid
+            ;;
+		$CMD_ST_PORTRAIT)
+            #st portrait
+			kill $st_portrait_cap_version_pid
+			kill $st_portrait_cap_begin_pid
+			kill $st_portrait_cap_end_pid
+            ;;
+		$CMD_ARC_FILTER)
+            #arc filter
+			kill $arc_filter_cap_begin_pid
+			kill $arc_filter_cap_end_pid
+            ;;
+		$CMD_TRAN_WATERMARK)
+            #tran_photo_wm
+			kill $tran_photoWM_cap_begin_pid
+			kill $tran_photoWM_cap_end_pid
+            ;;
+		esac
+	done
 }
 
 #==============================================================================
 # 分析拍照场景所有算法和功能的关键信息,并整理输出
 #==============================================================================
 captureInfosAnalysis() {
-	#sprd hdr
-	local version=$(sed -n "2p" ${SPRD_HDR_VERSION_INFO[2]} | awk -F '[' '{print $3}' | awk -F ' ' '{print $2}' | awk -F ']' '{print $1}')
-	if [[ ${version} != "" ]]; then
-		printResult "[HDR版本为: $version]"
-	fi
-	local time=$(sed -n "2p" ${SPRD_HDR_CAP_TIME_INFO[2]} | awk -F ':' '{print $3}')
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[HDR拍照耗时为:$time]"
-	fi
-	
-	#sprd mfnr
-	version=$(sed -n "2p" ${SPRD_MFNR_VERSION_INFO[2]} | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
-	if [[ ${version} != "" ]]; then
-		printResult "[MFNR版本为:$version]"
-	fi
-	startTime=$(tail -n 1 ${SPRD_MFNR_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
-	endTime=$(tail -n 1 ${SPRD_MFNR_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[MFNR拍照耗时为: $time ms]"
-	fi
-	
-	#tran fb
-	startTime=$(tail -n 1 ${TRAN_FB_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
-	endTime=$(tail -n 1 ${TRAN_FB_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[美颜拍照耗时为: $time ms]"
-	fi
-	
-	#st portrait
-	version=$(sed -n "2 {/version/p}" ${ST_PORTRAIT_CAP_VERSION_INFO[2]} | awk -F '=' '{print $2}')
-	if [[ ${version} != "" ]]; then
-		printResult "[虚化拍照版本为:$version]"
-	fi
-	startTime=$(tail -n 1 ${ST_PORTRAIT_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
-	endTime=$(tail -n 1 ${ST_PORTRAIT_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[虚化拍照耗时为: $time ms]"
-	fi
-	
-	#arc filter
-	startTime=$(tail -n 1 ${ARC_FILTER_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
-	endTime=$(tail -n 1 ${ARC_FILTER_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[滤镜拍照耗时为: $time ms]"
-	fi
-	
-	#tran_photo_wm
-	startTime=$(tail -n 1 ${TRAN_PHOTO_WM_BEGIN_TIME[2]} | awk '{print $1 " " $2}')
-	endTime=$(tail -n 1 ${TRAN_PHOTO_WM_END_TIME[2]} | awk '{print $1 " " $2}')
-	time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
-	if [[ ${time} != "" && ${time} != 0 ]]; then
-		printResult "[水印拍照耗时为: $time ms]"
-	fi
+	for item in $@
+	do
+		case $item in
+        $CMD_SPRD_HDR)
+            #sprd hdr
+			local version=$(sed -n "2p" ${SPRD_HDR_VERSION_INFO[2]} | awk -F '[' '{print $3}' | awk -F ' ' '{print $2}' | awk -F ']' '{print $1}')
+			if [[ ${version} != "" ]]; then
+				printResult "[HDR版本为: $version]"
+			fi
+			local time=$(sed -n "2p" ${SPRD_HDR_CAP_TIME_INFO[2]} | awk -F ':' '{print $3}')
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[HDR拍照耗时为:$time]"
+			fi
+            ;;
+		$CMD_SPRD_MFNR)
+            #sprd mfnr
+			version=$(sed -n "2p" ${SPRD_MFNR_VERSION_INFO[2]} | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
+			if [[ ${version} != "" ]]; then
+				printResult "[MFNR版本为:$version]"
+			fi
+			startTime=$(tail -n 1 ${SPRD_MFNR_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+			endTime=$(tail -n 1 ${SPRD_MFNR_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+			time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[MFNR拍照耗时为: $time ms]"
+			fi
+            ;;
+		$CMD_TRAN_FB)
+            #tran fb
+			startTime=$(tail -n 1 ${TRAN_FB_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+			endTime=$(tail -n 1 ${TRAN_FB_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+			time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[美颜拍照耗时为: $time ms]"
+			fi
+            ;;
+		$CMD_ST_PORTRAIT)
+            #st portrait
+			version=$(sed -n "2 {/version/p}" ${ST_PORTRAIT_CAP_VERSION_INFO[2]} | awk -F '=' '{print $2}')
+			if [[ ${version} != "" ]]; then
+				printResult "[虚化拍照版本为:$version]"
+			fi
+			startTime=$(tail -n 1 ${ST_PORTRAIT_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+			endTime=$(tail -n 1 ${ST_PORTRAIT_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+			time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[虚化拍照耗时为: $time ms]"
+			fi
+            ;;
+		$CMD_ARC_FILTER)
+            #arc filter
+			startTime=$(tail -n 1 ${ARC_FILTER_CAP_BEGIN_INFO[2]} | awk '{print $1 " " $2}')
+			endTime=$(tail -n 1 ${ARC_FILTER_CAP_END_INFO[2]} | awk '{print $1 " " $2}')
+			time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[滤镜拍照耗时为: $time ms]"
+			fi
+            ;;
+		$CMD_TRAN_WATERMARK)
+            #tran_photo_wm
+			startTime=$(tail -n 1 ${TRAN_PHOTO_WM_BEGIN_TIME[2]} | awk '{print $1 " " $2}')
+			endTime=$(tail -n 1 ${TRAN_PHOTO_WM_END_TIME[2]} | awk '{print $1 " " $2}')
+			time=$(($(date +%s%3N -d "2023-$endTime") - $(date +%s%3N -d "2023-$startTime")))
+			if [[ ${time} != "" && ${time} != 0 ]]; then
+				printResult "[水印拍照耗时为: $time ms]"
+			fi
+            ;;
+		esac
+	done
 }
 
 #==============================================================================
@@ -515,20 +609,20 @@ waitUntilDone() {
 # 展锐平台场景识别算法功能检查
 #==============================================================================
 sprdAISceneCheck() {
-	previewStartGrabInfos
+	previewStartGrabInfos $CMD_SPRD_AISCENE
 	printNormalTip "请进入或返回键退出后重新进入相机"
 	waitUntilDone ${SPRD_AISCENE_VERSION_INFO[2]}
-	previewStopGrabInfos
-	previewInfosAnalysis
+	previewStopGrabInfos $CMD_SPRD_AISCENE
+	previewInfosAnalysis $CMD_SPRD_AISCENE
 	
 	printNormalTip  "请确保AI功能开启"
 	while true
 	do
-		previewStartGrabInfos
+		previewStartGrabInfos $CMD_SPRD_AISCENE
 		printNormalTip "场景检测中,请保持手机对准需要识别的场景"
 		waitUntilDone ${SPRD_AISCENE_RESULT_INFO[2]}
-		previewStopGrabInfos
-		previewInfosAnalysis
+		previewStopGrabInfos $CMD_SPRD_AISCENE
+		previewInfosAnalysis $CMD_SPRD_AISCENE
 		while true
 		do
 			printInteractTip "是否继续识别？[Y/N][直接回车默认Y] "
@@ -553,20 +647,20 @@ sprdAISceneCheck() {
 # 传音自研场景识别算法功能检查
 #==============================================================================
 tranAsdCheck() {
-	previewStartGrabInfos
+	previewStartGrabInfos $CMD_TRAN_ASD
 	printNormalTip "请进入或返回键退出后重新进入相机"
 	waitUntilDone ${TRAN_ASD_VERSION_INFO[2]}
-	previewStopGrabInfos
-	previewInfosAnalysis
+	previewStopGrabInfos $CMD_TRAN_ASD
+	previewInfosAnalysis $CMD_TRAN_ASD
 
 	printNormalTip  "请确保AI功能开启"
 	while true
 	do
-		previewStartGrabInfos
+		previewStartGrabInfos $CMD_TRAN_ASD
 		printNormalTip "场景检测中,请保持手机对准需要识别的场景"
 		waitUntilDone ${TRAN_ASD_RESULT_INFO[2]}
-		previewStopGrabInfos
-		previewInfosAnalysis
+		previewStopGrabInfos $CMD_TRAN_ASD
+		previewInfosAnalysis $CMD_TRAN_ASD
 		while true
 		do
 			printInteractTip "是否继续识别？[Y/N][直接回车默认Y] "
@@ -606,13 +700,13 @@ sceneDetectCheck() {
 # 展锐平台HDR的场景拍照算法的检查
 #==============================================================================
 sprdHDRCheck() {
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_SPRD_HDR
 	printNormalTip "$1"
 	printNormalTip "在识别到HDR的场景下拍摄一张照片"
 	waitUntilDone ${SPRD_HDR_VERSION_INFO[2]}
 	waitUntilDone ${SPRD_HDR_CAP_TIME_INFO[2]}
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_SPRD_HDR
+	captureInfosAnalysis $CMD_SPRD_HDR
 }
 
 #==============================================================================
@@ -663,13 +757,13 @@ photoHDRcheck() {
 #==============================================================================
 mfnrCheck() {
 	printAlgoName "MFNR"
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_SPRD_MFNR
 	printNormalTip "请关闭闪光灯，并在暗环境下拍摄一张照片"
 	waitUntilDone ${SPRD_MFNR_VERSION_INFO[2]}
 	waitUntilDone ${SPRD_MFNR_CAP_BEGIN_INFO[2]}
 	waitUntilDone ${SPRD_MFNR_CAP_END_INFO[2]}
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_SPRD_MFNR
+	captureInfosAnalysis $CMD_SPRD_MFNR
 }
 
 #==============================================================================
@@ -689,30 +783,30 @@ getTranFbTime() {
 	read CMD
 	printDivideLine
 	
-	previewStartGrabInfos
+	previewStartGrabInfos $CMD_TRAN_FB
 	waitUntilDone ${TRAN_FB_PREV_PERF_INFO[2]}
-	previewStopGrabInfos
-	previewInfosAnalysis
+	previewStopGrabInfos $CMD_TRAN_FB
+	previewInfosAnalysis $CMD_TRAN_FB
 	
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_TRAN_FB
 	printNormalTip "请将摄像头对准人脸后,点击拍照按钮"
 	waitUntilDone ${TRAN_FB_CAP_BEGIN_INFO[2]}
 	waitUntilDone ${TRAN_FB_CAP_END_INFO[2]}
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_TRAN_FB
+	captureInfosAnalysis $CMD_TRAN_FB
 }
 
 #==============================================================================
 # 美颜算法检查
 #==============================================================================
 tranFbCheck() {
-	previewStartGrabInfos
+	previewStartGrabInfos $CMD_TRAN_FB
 	printNormalTip "$1"
 	waitUntilDone ${TRAN_FB_VERSION_INFO[2]}
 	waitUntilDone ${TRAN_FB_LEVELS_INFO[2]}
 	waitUntilDone ${TRAN_FB_INDEX_INFO[2]}
-	previewStopGrabInfos
-	previewInfosAnalysis
+	previewStopGrabInfos $CMD_TRAN_FB
+	previewInfosAnalysis $CMD_TRAN_FB
 	
 	getTranFbTime
 	while true
@@ -769,12 +863,12 @@ photoFaceBeauty() {
 # 滤镜算法检查
 #==============================================================================
 arcFilterCheck() {
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_ARC_FILTER
 	printNormalTip "请开启滤镜后进行拍照"
 	waitUntilDone ${ARC_FILTER_CAP_BEGIN_INFO[2]}
 	waitUntilDone ${ARC_FILTER_CAP_END_INFO[2]}
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_ARC_FILTER
+	captureInfosAnalysis $CMD_ARC_FILTER
 }
 
 #==============================================================================
@@ -934,19 +1028,19 @@ continuousPhotoCheck() {
 # 虚化算法检查
 #==============================================================================
 stPortraitCheck() {
-	previewStartGrabInfos
+	previewStartGrabInfos $CMD_ST_PORTRAIT
 	printNormalTip "请重新进入人像模式"
 	waitUntilDone ${ST_PORTRAIT_PREV_VERSION_INFO[2]}
-	previewStopGrabInfos
-	previewInfosAnalysis
+	previewStopGrabInfos $CMD_ST_PORTRAIT
+	previewInfosAnalysis $CMD_ST_PORTRAIT
 	
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_ST_PORTRAIT
 	printNormalTip "请识别到人脸后进行拍照"
 	waitUntilDone ${ST_PORTRAIT_CAP_VERSION_INFO[2]}
 	waitUntilDone ${ST_PORTRAIT_CAP_BEGIN_INFO[2]}
 	waitUntilDone ${ST_PORTRAIT_CAP_END_INFO[2]}
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_ST_PORTRAIT
+	captureInfosAnalysis $CMD_ST_PORTRAIT
 }
 
 #==============================================================================
@@ -954,12 +1048,12 @@ stPortraitCheck() {
 #==============================================================================
 tranPhotoWMCheck() {
 	#TODO（版本号）
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_TRAN_WATERMARK
 	printNormalTip "请开启水印后进行拍照"
 	waitUntilDone ${TRAN_PHOTO_WM_BEGIN_TIME[2]}
 	waitUntilDone ${TRAN_PHOTO_WM_END_TIME[2]}
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_TRAN_WATERMARK
+	captureInfosAnalysis $CMD_TRAN_WATERMARK
 }
 
 #==============================================================================
@@ -978,13 +1072,13 @@ continuousCapCheck() {
 	printInteractTip "请确保关闭[AI]、[美颜]、[滤镜]、[闪光灯]等不支持与连拍同时开启的设置项后回车确认"
 	read CMD
 	printDivideLine
-	captureStartGrabInfos
+	captureStartGrabInfos $CMD_TRAN_FB $CMD_ST_PORTRAIT $CMD_SPRD_MFNR
 	printNormalTip "请进行连拍"
 	printInteractTip "请在完成连拍后回车确认"
 	read CMD
 	printDivideLine
-	captureStopGrabInfos
-	captureInfosAnalysis
+	captureStopGrabInfos $CMD_TRAN_FB $CMD_ST_PORTRAIT $CMD_SPRD_MFNR
+	captureInfosAnalysis $CMD_TRAN_FB $CMD_ST_PORTRAIT $CMD_SPRD_MFNR
 	if ! [ -s ${TRAN_FB_CAP_BEGIN_INFO[2]} ]
 	then
 		printResult "[连拍时未执行美颜算法]"
@@ -1009,13 +1103,13 @@ continuousCapCheck() {
 # 算法检查入口函数
 #==============================================================================
 camCheck() {
-	photoModeCheck 				#拍照模式检查
-	fbModeCheck 				#美颜模式检查
-	portraitModeCheck			#人像模式检查
-	nightModeCheck				#夜景模式检查
-	hdrModeCheck				#HDR模式检查
+	#photoModeCheck 				#拍照模式检查
+	#fbModeCheck 				#美颜模式检查
+	#portraitModeCheck			#人像模式检查
+	#nightModeCheck				#夜景模式检查
+	#hdrModeCheck				#HDR模式检查
 	
-	watermarkPhotoAlgoCheck		#水印拍照算法检查
+	#watermarkPhotoAlgoCheck		#水印拍照算法检查
 	#watermarkVideoAlgoCheck		#水印录像算法检查
 	
 	continuousPhotoCheck		#连拍功能检查
@@ -1027,7 +1121,7 @@ camCheck() {
 interactDeleteFiles() {
 	while true
 	do
-		printInteractTip "是否需要删除脚本运行过程中生成的所有中间文件？[Y/N][直接回车默认Y] "
+		printInteractTip "是否需要删除所有中间文件？[Y/N][直接回车默认Y] "
 		read delete
 		printDivideLine
 		if [ -z $delete ] || [ ${delete,,} == "y" ]; then
