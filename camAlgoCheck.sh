@@ -1161,6 +1161,119 @@ interactDeleteFiles() {
 	done
 }
 
+# 此方法作为一个可选功能
+# 启动脚本后自动识别连接设备的 ro.build.product
+# 并与配置文件中的项目进行匹配
+# 当前仅支持但设备
+autoDetectConnectedConfiguredDevice() {
+	#adb devices
+	str=$(adb devices | grep "device")
+	#echo -e '\n'
+	#echo ${str#*List of devices attached}
+
+	devices=${str#*List of devices attached}
+	#echo ${devices}
+
+	#echo $devices | tr "device" "."
+
+	# https://blog.csdn.net/weixin_53403154/article/details/131922768
+	###################################################################################
+	# 从右向左截取最后一个string后的字符串
+	# echo ${devices%%device*}
+	# 从左向右截取第一个string后的字符串
+	# ${varible#*string}
+	# 从右向左截取最后一个string后的字符串
+	# ${varible%%string*}
+	# 从右向左截取第一个string后的字符串
+	# ${varible%string*}
+	###################################################################################
+	# https://codeleading.com/article/5063103955/
+	# 字符串trim     利用xargs可以实现trim
+	# word=`echo $word | xargs`
+	###################################################################################
+
+	count=$(adb devices | grep -cw "device")
+	#echo $count
+
+	# 从右向左截取最后一个string后的字符串
+	#firstDev=${devices%%device*}
+	#firstDev=`echo $firstDev | xargs`
+	#echo $firstDev ${#firstDev}
+	#remainDev=${devices#*device}
+	#echo $remainDev
+	#secondDev=${remainDev%%device*}
+	#secondDev=`echo $secondDev | xargs`
+	#echo $secondDev ${#secondDev}
+
+	#for i in "${devList[@]}"
+	#do
+	#	echo $i
+	#done
+
+	getProductList
+
+	devList=()
+	devProductList=()
+	local devCnt=0
+	local devCntConfiged=0
+	while (($devCnt < $count))
+	do
+		#echo $devCnt $devices
+		#echo ${devices%%device*}
+		dev=${devices%%device*}
+		dev=`echo $dev | xargs`
+		#dev=`echo ${devList[$devCnt]} | xargs`
+		#echo ${devList[$devCnt]} #${#devList[$devCnt]}
+		devices=${devices#*device}
+
+		#echo $dev
+		product=$(adb -s $dev shell getprop | grep ro.build.product)
+		product=${product#*:}
+		product=`echo $product | xargs`
+		product=$(echo ${product//[/})
+		product=$(echo ${product//]/})
+		#echo $dev $product ${#product}
+
+		local productConfiged=0
+		for item in ${productList[*]}
+		do
+			#echo $item
+			# https://blog.csdn.net/yabingshi_tech/article/details/51132405
+			if [ "$item" = "$product" ]
+			then
+				#echo $item --------------------
+				productConfiged=1
+				devList[$devCntConfiged]=$dev
+				devProductList[$devCntConfiged]=$product
+				let devCntConfiged++
+				break
+			fi
+		done
+		let devCnt++
+	done
+
+	length=${#devList[@]}
+	echo detected $length device configed:
+	local queryDevCnt=0
+	while (($queryDevCnt < $length))
+	do
+		echo ${devList[$queryDevCnt]} ${devProductList[$queryDevCnt]}
+		let queryDevCnt++
+	done
+
+	if (($length == 1))
+	then
+		getConfig ${devProductList[0]}
+	else
+		hint 						#脚本功能展示提示语部分
+		getProductList 				#加载同级目录下的配置文件
+		chooseProduct				#提示用户选择需要检查的项目
+	fi
+
+	camCheck					#算法检查入口
+	interactDeleteFiles			#检查结束询问用户是否删除中间文件
+}
+
 main() {
 	hint 						#脚本功能展示提示语部分
 	getProductList 				#加载同级目录下的配置文件
